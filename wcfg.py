@@ -7,12 +7,14 @@
 # Distributed under terms of the GPL3 license or, if that suits you
 # better the MIT/X11 license.
 
-"""
+"""This module provide a pythonic way to parse configuration files
+used in libwheel
 """
 
 __version__ = 1
 
-import six, string
+import six
+import string
 
 _SPACE = six.b(" ")
 _COLON = six.b(":")
@@ -31,6 +33,9 @@ _HEX_X = six.b("xX")
 _NUMBER_EXP = six.b("eE")
 _DOT = six.b(".")
 _EOF = six.b("")
+
+whitespaces = six.b(string.whitespace)
+digits = six.b(string.digits)
 
 
 def _dump_value(value, stream, indent):
@@ -63,7 +68,7 @@ def _dump_value(value, stream, indent):
         stream.write(_RBRACE)
     else:
         raise TypeError("Values of type " + str(type(value)) +
-                " cannot be dumped")
+                        " cannot be dumped")
 
 
 def _dump_dict(value, stream, indent=0):
@@ -90,7 +95,7 @@ def dump(value, stream):
 class ParseError(ValueError):
     def __init__(self, line, column, message):
         super(ParseError, self).__init__(str(line) + ":" + str(column) +
-                ": " + message)
+                                         ": " + message)
         self.line = line
         self.column = column
         self.message = message
@@ -110,7 +115,7 @@ class Parser(object):
     def match(self, char):
         if self.look != char:
             self.error("Character '" + str(char) + "' expected, got '"
-                    + self.look + "' instead")
+                       + self.look + "' instead")
         self.getchar()
         self.skip_whitespace()
 
@@ -128,15 +133,15 @@ class Parser(object):
                 self.look = self.stream.read(1)
             self.column = 1
             self.line += 1
-        #self.getchar()
+        # self.getchar()
 
     def skip_whitespace(self):
-        while self.look != _EOF and self.look in string.whitespace:
+        while self.look != _EOF and self.look in whitespaces:
             self.getchar()
 
     def parse_identifier(self):
         identifier = six.BytesIO()
-        while self.look != _COLON and self.look not in string.whitespace:
+        while self.look != _COLON and self.look not in whitespaces:
             identifier.write(self.look)
             self.getchar()
         self.skip_whitespace()
@@ -166,16 +171,16 @@ class Parser(object):
             number.write(self.look)
             self.getchar()
         # Detect octal and hexadecimal numbers.
-        accepted_chars = string.digits + _DOT + _NUMBER_EXP
+        accepted_chars = digits + _DOT + _NUMBER_EXP
         if not has_sign and self.look == _ZERO:
             number.write(self.look)
             self.getchar()
             if self.look in _HEX_X:
-                accepted_chars = string.hexdigits
+                accepted_chars = six.b(string.hexdigits)
                 number.write(self.look)
                 self.getchar()
             else:
-                accepted_chars = string.octdigits
+                accepted_chars = six.b(string.octdigits)
 
         # Read the rest of the number.
         dot_seen = False
@@ -195,13 +200,13 @@ class Parser(object):
             self.getchar()
         # Return number converted to the most appropriate type.
         if is_hex:
-            return int(number.getvalue(), 16)
+            return int(number.getvalue().decode('utf-8'), 16)
         elif is_oct:
-            return int(number.getvalue(), 8)
+            return int(number.getvalue().decode('utf-8'), 8)
         elif dot_seen or exp_seen:
-            return float(number.getvalue())
+            return float(number.getvalue().decode('utf-8'))
         else:
-            return int(number.getvalue())
+            return int(number.getvalue().decode('utf-8'))
 
     def parse_value(self):
         value = None
@@ -238,10 +243,12 @@ class Parser(object):
 def load(stream):
     return Parser(stream).parse_keyval_items()
 
+
 def dumps(value):
     output = six.BytesIO()
     dump(value, output)
     return output.getvalue()
+
 
 def loads(bytestring):
     if isinstance(bytestring, six.text_type):

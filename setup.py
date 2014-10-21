@@ -7,8 +7,9 @@
 # Distributed under terms of the GPL3 license or, if that suits you
 # better the MIT/X11 license.
 
-from setuptools import setup, find_packages
+from setuptools import setup
 from os import path
+
 
 def distrib_file(*relpath):
     try:
@@ -17,6 +18,7 @@ def distrib_file(*relpath):
         class DummyFile(object):
             read = lambda self: ""
         return DummyFile()
+
 
 def wcfg_version():
     for line in distrib_file("wcfg.py"):
@@ -32,17 +34,17 @@ def wcfg_readme():
 
 
 setup(
-    name = "wcfg",
-    version = wcfg_version(),
-    description = "Parser for hyerarchical text data and configuration files",
-    long_description = wcfg_readme(),
-    author = "Adrian Perez de Castro",
-    author_email = "aperez@igalia.com",
-    url = "https://github.com/aperezdc/python-wcfg",
-    packages = find_packages(),
-    install_requires = ["six>=1.8.0"],
-    license = "Dual GPL3 / MIT",
-    classifiers = [
+    name="wcfg",
+    version=wcfg_version(),
+    description="Parser for hyerarchical text data and configuration files",
+    long_description=wcfg_readme(),
+    author="Adrian Perez de Castro",
+    author_email="aperez@igalia.com",
+    url="https://github.com/aperezdc/python-wcfg",
+    py_modules=["wcfg"],
+    install_requires=["six>=1.8.0"],
+    license="Dual GPL3 / MIT",
+    classifiers=[
         "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
         "Natural Language :: English",
