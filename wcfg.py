@@ -33,6 +33,9 @@ _HEX_X = six.b("xX")
 _NUMBER_EXP = six.b("eE")
 _DOT = six.b(".")
 _EOF = six.b("")
+_BOOL = six.b("tTfF")
+_TRUE = six.b("tT")
+_FALSE = six.b("fF")
 
 whitespaces = six.b(string.whitespace)
 digits = six.b(string.digits)
@@ -145,7 +148,18 @@ class Parser(object):
             identifier.write(self.look)
             self.getchar()
         self.skip_whitespace()
-        return identifier.getvalue().decode("utf-8")
+        return identifier.getvalue()
+
+    def parse_bool(self):
+        if self.look in _TRUE:
+            ret = True
+        elif self.look in _FALSE:
+            ret = False
+        else:
+            self.error("True or False expected for boolean")
+        while self.look != _NEWLINE and self.look != _EOF:
+            self.getchar()
+        return ret
 
     def parse_string(self):
         string = six.BytesIO()
@@ -160,9 +174,11 @@ class Parser(object):
             self.error("Unterminated string")
         self.getchar()
         self.skip_whitespace()
-        return string.getvalue().decode("utf-8")
+        return string.getvalue().decode('utf-8')
 
     def parse_number(self):
+        is_hex = False
+        is_oct = False
         number = six.BytesIO()
         # Optional sign.
         has_sign = False
@@ -176,17 +192,17 @@ class Parser(object):
             number.write(self.look)
             self.getchar()
             if self.look in _HEX_X:
+                is_hex = True
                 accepted_chars = six.b(string.hexdigits)
                 number.write(self.look)
                 self.getchar()
             else:
+                is_oct = True
                 accepted_chars = six.b(string.octdigits)
 
         # Read the rest of the number.
         dot_seen = False
         exp_seen = False
-        is_hex = False
-        is_oct = False
         while self.look != _EOF and self.look in accepted_chars:
             if self.look in _NUMBER_EXP:
                 if exp_seen:
@@ -199,14 +215,15 @@ class Parser(object):
             number.write(self.look)
             self.getchar()
         # Return number converted to the most appropriate type.
+        self.skip_whitespace()
         if is_hex:
-            return int(number.getvalue().decode('utf-8'), 16)
+            return int(number.getvalue(), 16)
         elif is_oct:
-            return int(number.getvalue().decode('utf-8'), 8)
+            return int(number.getvalue(), 8)
         elif dot_seen or exp_seen:
-            return float(number.getvalue().decode('utf-8'))
+            return float(number.getvalue())
         else:
-            return int(number.getvalue().decode('utf-8'))
+            return int(number.getvalue())
 
     def parse_value(self):
         value = None
@@ -220,6 +237,8 @@ class Parser(object):
             self.match(_LBRACKET)
             value = self.parse_array_items()
             self.match(_RBRACKET)
+        elif self.look in _BOOL:
+            value = self.parse_bool()
         else:
             value = self.parse_number()
         return value
@@ -234,9 +253,11 @@ class Parser(object):
         result = {}
         while self.look != _EOF and self.look != _RBRACE:
             key = self.parse_identifier()
+            if not key:
+                continue
             if self.look == _COLON:
                 self.match(_COLON)
-            result[key] = self.parse_value()
+            result[key.decode('utf-8')] = self.parse_value()
         return result
 
 
