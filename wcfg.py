@@ -33,6 +33,9 @@ _HEX_X = six.b("xX")
 _NUMBER_EXP = six.b("eE")
 _DOT = six.b(".")
 _EOF = six.b("")
+_BOOL = six.b("tTfF")
+_TRUE = six.b("tT")
+_FALSE = six.b("fF")
 
 whitespaces = six.b(string.whitespace)
 digits = six.b(string.digits)
@@ -155,6 +158,17 @@ class Parser(object):
         self.skip_whitespace()
         return identifier.getvalue().decode("utf-8")
 
+    def parse_bool(self):
+        if self.look in _TRUE:
+            ret = True
+        elif self.look in _FALSE:
+            ret = False
+        else:
+            self.error("True or False expected for boolean")
+        while self.look != _NEWLINE and self.look != _EOF:
+            self.getchar()
+        return ret
+
     def parse_string(self):
         value = six.BytesIO()
         char = self.stream.read(1)
@@ -255,6 +269,8 @@ class Parser(object):
             self.match(_LBRACKET)
             value = self.parse_array_items()
             self.match(_RBRACKET)
+        elif self.look in _BOOL:
+            value = self.parse_bool()
         else:
             value = self.parse_number()
         return value
