@@ -19,14 +19,15 @@ class TestConfigFiles(unittest.TestCase):
         f.close()
         self.assertTrue(isinstance(value, dict))
 
+    @classmethod
+    def setup_tests(cls):
+        dirpath = path.abspath(path.dirname(__file__))
+        for filename in listdir(dirpath):
+            if filename.endswith(".conf"):
+                sanitized_name = "test_" + filename[:-5].replace("-", "_")
+                filepath = path.join(dirpath, filename)
+                setattr(cls, sanitized_name,
+                        lambda self: self.check_file(filepath))
 
-dirpath = path.abspath(path.dirname(__file__))
-for filename in listdir(dirpath):
-    if not filename.endswith(".conf"):
-        continue
-    sanitized_name = "test_" + filename[:-5].replace("-", "_")
-    filename = path.join(dirpath, filename)
-    setattr(TestConfigFiles, sanitized_name,
-            lambda self: self.check_file(filename))
 
-
+TestConfigFiles.setup_tests()
