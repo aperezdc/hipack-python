@@ -244,7 +244,7 @@ class Parser(object):
         while self.look != _EOF and self.look in accepted_chars:
             if self.look in _NUMBER_EXP and not is_hex:
                 if exp_seen:
-                    self.error("Malformed number")
+                    self.error("Malformed number at '" + str(self.look) + "'")
                 exp_seen = True
                 # Handle the optional sign of the exponent.
                 number.write(self.look)
@@ -256,7 +256,7 @@ class Parser(object):
 
             if self.look == _DOT:
                 if dot_seen:
-                    self.error("Malformed number")
+                    self.error("Malformed number at '" + str(self.look) + "'")
                 dot_seen = True
 
             number.write(self.look)
