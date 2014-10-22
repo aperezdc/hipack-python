@@ -171,24 +171,26 @@ class Parser(object):
             number.write(self.look)
             self.getchar()
         # Detect octal and hexadecimal numbers.
+        is_hex = False
+        is_octal = False
         accepted_chars = digits + _DOT + _NUMBER_EXP
         if not has_sign and self.look == _ZERO:
             number.write(self.look)
             self.getchar()
             if self.look in _HEX_X:
+                is_hex = True
                 accepted_chars = six.b(string.hexdigits)
                 number.write(self.look)
                 self.getchar()
             else:
+                is_octal = True
                 accepted_chars = six.b(string.octdigits)
 
         # Read the rest of the number.
         dot_seen = False
         exp_seen = False
-        is_hex = False
-        is_oct = False
         while self.look != _EOF and self.look in accepted_chars:
-            if self.look in _NUMBER_EXP:
+            if self.look in _NUMBER_EXP and not is_hex:
                 if exp_seen:
                     self.error("Malformed number")
                 exp_seen = True
@@ -199,14 +201,27 @@ class Parser(object):
             number.write(self.look)
             self.getchar()
         # Return number converted to the most appropriate type.
+        number = number.getvalue().decode("ascii")
         if is_hex:
-            return int(number.getvalue().decode('utf-8'), 16)
-        elif is_oct:
-            return int(number.getvalue().decode('utf-8'), 8)
+            assert not is_octal
+            assert not exp_seen
+            assert not dot_seen
+            return int(number, 16)
+        elif is_octal:
+            assert not is_hex
+            assert not exp_seen
+            assert not dot_seen
+            return int(number, 8)
         elif dot_seen or exp_seen:
-            return float(number.getvalue().decode('utf-8'))
+            assert not is_hex
+            assert not is_octal
+            return float(number)
         else:
-            return int(number.getvalue().decode('utf-8'))
+            assert not is_hex
+            assert not is_octal
+            assert not exp_seen
+            assert not dot_seen
+            return int(number)
 
     def parse_value(self):
         value = None
