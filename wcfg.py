@@ -90,6 +90,10 @@ def _dump_dict(value, stream, indent):
             k = k.encode("utf-8")
         elif not isinstance(k, six.string_types):
             raise TypeError("Key is not a string: " + repr(k))
+        if _COLON in k:
+            raise ValueError("Key contains a colon: " + repr(k))
+        if _SPACE in k:
+            raise ValueError("Key contains a space: " + repr(k))
         stream.write(_SPACE * (indent * 2))
         stream.write(k)
         stream.write(_COLON)

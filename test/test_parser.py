@@ -198,6 +198,26 @@ class TestDump(unittest.TestCase):
             self.assertEquals(expected, result)
             self.assertTrue(isinstance(result, bytes))
 
+    def test_invalid_key_types(self):
+        invalid_keys = (
+            42, 3.14,    # Numeric.
+            object(),    # Objects.
+            True, False, # Booleans.
+            [], (), {},  # Collections.
+        )
+        for key in invalid_keys:
+            with self.assertRaises(TypeError):
+                wcfg.dumps({ key: True })
+
+    def test_invalid_key_values(self):
+        invalid_keys = (
+            "col:on",    # Colons are not allowed.
+            "sp ace",    # Ditto for spaces.
+        )
+        for key in invalid_keys:
+            with self.assertRaises(ValueError):
+                wcfg.dumps({ key: True })
+
 
 class TestAPI(unittest.TestCase):
 
