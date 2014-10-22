@@ -61,6 +61,28 @@ class TestParser(unittest.TestCase):
         )
         self.check_numbers(numbers, six.integer_types)
 
+    def test_parse_valid_float_numbers(self):
+        numbers = (
+            (u"1.", 1.0),
+            (u".5", 0.5),
+            (u"1.5", 1.5),
+            (u"1e3", 1e3),
+            (u"1e-3", 1e-3),
+            (u"1.e3", 1e3),
+            (u"1.e-3", 1e-3),
+            (u".5e3", 0.5e3),
+            (u".5e-3", 0.5e-3),
+            (u"1.5e3", 1.5e3),
+            (u"1.5e-3", 1.5e-3),
+        )
+        def gen_signs():
+            for item, value in numbers:
+                yield (item, value)
+                yield (u"+" + item, value)
+                yield (u"-" + item, -value)
+
+        self.check_numbers(gen_signs(), float)
+
     def test_parse_valid_identifiers(self):
         identifiers = (
             # Typical definition of identifiers.

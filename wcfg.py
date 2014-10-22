@@ -164,12 +164,14 @@ class Parser(object):
 
     def parse_number(self):
         number = six.BytesIO()
+
         # Optional sign.
         has_sign = False
         if self.look in _NUMBER_SIGNS:
             has_sign = True
             number.write(self.look)
             self.getchar()
+
         # Detect octal and hexadecimal numbers.
         is_hex = False
         is_octal = False
@@ -194,12 +196,22 @@ class Parser(object):
                 if exp_seen:
                     self.error("Malformed number")
                 exp_seen = True
-            elif self.look == _DOT:
+                # Handle the optional sign of the exponent.
+                number.write(self.look)
+                self.getchar()
+                if self.look in _NUMBER_SIGNS:
+                    number.write(self.look)
+                    self.getchar()
+                continue
+
+            if self.look == _DOT:
                 if dot_seen:
                     self.error("Malformed number")
                 dot_seen = True
+
             number.write(self.look)
             self.getchar()
+
         # Return number converted to the most appropriate type.
         number = number.getvalue().decode("ascii")
         if is_hex:
