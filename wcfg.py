@@ -148,19 +148,19 @@ class Parser(object):
         return identifier.getvalue().decode("utf-8")
 
     def parse_string(self):
-        string = six.BytesIO()
+        value = six.BytesIO()
         char = self.stream.read(1)
         while char != _DQUOTE and char != _EOF:
             if char == _BACKSLASH:
                 # A backslash picks the next character literally.
                 char = self.stream.read(1)
-            string.write(char)
+            value.write(char)
             char = self.stream.read(1)
         if char != _DQUOTE:
             self.error("Unterminated string")
         self.getchar()
         self.skip_whitespace()
-        return string.getvalue().decode("utf-8")
+        return value.getvalue().decode("utf-8")
 
     def parse_number(self):
         number = six.BytesIO()
