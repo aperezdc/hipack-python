@@ -48,7 +48,7 @@ class TestParser(unittest.TestCase):
             (u"0xCAFE", 0xCAFE),
             (u"0xCaFe", 0xCAFE),
             (u"0x1234", 0x1234),
-            (u"0xC00FFEE", 0xC00FEE),
+            (u"0xC00FFEE", 0xC00FFEE),
             (u"0xdeadbeef", 0xdeadbeef),
         )
         self.check_numbers(numbers, six.integer_types)
