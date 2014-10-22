@@ -87,3 +87,25 @@ class TestParser(unittest.TestCase):
             self.assertEquals(item, ident)
             self.assertTrue(isinstance(ident, six.text_type))
 
+    def check_strings(self, strings, type_):
+        for item in strings:
+            if isinstance(item, tuple):
+                item, expected = item
+            else:
+                expected = item
+            value = self.parser(u"\"" + item + u"\"").parse_string()
+            self.assertEquals(expected, value)
+            self.assertTrue(isinstance(value, type_))
+
+    def test_parse_valid_strings(self):
+        strings = (
+            u"",
+            u"this is a string",
+            u" another with leading space",
+            u"yet one more with trailing space ",
+            u"unicode: this → that, Trømso, Java™, ☺",
+            (u"escaped backslash: \\\\", u"escaped backslash: \\"),
+            (u"escaped double quote: \\\"", u"escaped double quote: \""),
+            (u"escaped UTF-8: \\☺", u"escaped UTF-8: ☺"),
+        )
+        self.check_strings(strings, six.text_type)
