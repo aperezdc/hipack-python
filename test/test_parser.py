@@ -134,6 +134,34 @@ class TestParser(unittest.TestCase):
         self.check_strings(strings, six.text_type)
 
 
+class TestDump(unittest.TestCase):
+
+    @staticmethod
+    def dump_value(value):
+        stream = six.BytesIO()
+        wcfg._dump_value(value, stream, 0)
+        return stream.getvalue()
+
+    def test_dump_values(self):
+        values = (
+            (123, b"123"),
+            (-123, b"-123"),
+            (0xFF, b"255"),  # An hex literal in Python is still an integer.
+            (0o5, b"5"),     # Ditto for octals in Python.
+            (0.5, b"0.5"),
+            (-0.5, b"-0.5"),
+            (u"a string", b'"a string"'),
+            (u"double quote: \"", b'"double quote: \\""'),
+            ((1, 2, 3), b"[\n  1\n  2\n  3\n]"),
+            ([1, 2, 3], b"[\n  1\n  2\n  3\n]"),
+            ({"a": 1, "b": 2}, b"{\n  a: 1\n  b: 2\n}"),
+        )
+        for value, expected in values:
+            result = self.dump_value(value)
+            self.assertEquals(expected, result)
+            self.assertTrue(isinstance(result, bytes))
+
+
 class TestAPI(unittest.TestCase):
 
     def test_dumps(self):

@@ -40,9 +40,9 @@ digits = six.b(string.digits)
 
 def _dump_value(value, stream, indent):
     if isinstance(value, float):
-        stream.write(str(float))
+        stream.write(str(value).encode("ascii"))
     elif isinstance(value, six.integer_types):
-        stream.write(str(value))
+        stream.write(str(value).encode("ascii"))
     elif isinstance(value, six.text_type):
         stream.write(_DQUOTE)
         stream.write(value.encode("utf-8").replace(_DQUOTE, _SLASHDQUOTE))
