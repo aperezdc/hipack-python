@@ -179,44 +179,51 @@ class TestDump(unittest.TestCase):
 
 class TestAPI(unittest.TestCase):
 
+    TEST_VALUES = (
+        ({"a": 1, "b": 2}, """\
+            a: 1
+            b: 2
+            """),
+        ({"a": {"b": {}}}, """\
+            a: {
+              b: {
+              }
+            }
+            """),
+        ({"a": {"t": True}, "nums": [1e4, -2, 0xA], "f": False}, """\
+            a: {
+              t: True
+            }
+            f: False
+            nums: [
+              10000.0
+              -2
+              10
+            ]
+            """),
+        ({"a": [{"b": 1}, [1, 2, 3]]}, """\
+            a: [
+              {
+                b: 1
+              }
+              [
+                1
+                2
+                3
+              ]
+            ]
+            """),
+    )
+
     def test_dumps(self):
-        values = (
-            ({"a": 1, "b": 2}, """\
-                a: 1
-                b: 2
-                """),
-            ({"a": {"b": {}}}, """\
-                a: {
-                  b: {
-                  }
-                }
-                """),
-            ({"a": {"t": True}, "nums": (1e4, -2, 0xA), "f": False}, """\
-                a: {
-                  t: True
-                }
-                f: False
-                nums: [
-                  10000.0
-                  -2
-                  10
-                ]
-                """),
-            ({"a": ({"b": 1}, [1, 2, 3])}, """\
-                a: [
-                  {
-                    b: 1
-                  }
-                  [
-                    1
-                    2
-                    3
-                  ]
-                ]
-                """),
-        )
-        for value, expected in values:
+        for value, expected in self.TEST_VALUES:
             result = wcfg.dumps(value)
             expected = six.b(dedent(expected))
             self.assertEquals(expected, result)
             self.assertTrue(isinstance(result, bytes))
+
+    def test_loads(self):
+        for expected, value in self.TEST_VALUES:
+            result = wcfg.loads(six.b(dedent(value)))
+            self.assertTrue(isinstance(result, dict))
+            self.assertDictEqual(expected, result)
