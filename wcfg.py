@@ -33,9 +33,11 @@ _HEX_X = six.b("xX")
 _NUMBER_EXP = six.b("eE")
 _DOT = six.b(".")
 _EOF = six.b("")
-_BOOL = six.b("tTfF")
-_TRUE = six.b("tT")
-_FALSE = six.b("fF")
+_BOOL_LEADERS = six.b("tTfF")
+_TRUE_T = six.b("tT")
+_TRUE_RUE = (six.b("r"), six.b("u"), six.b("e"))
+_FALSE_F = six.b("fF")
+_FALSE_ALSE = (six.b("a"), six.b("l"), six.b("s"), six.b("e"))
 
 whitespaces = six.b(string.whitespace)
 digits = six.b(string.digits)
@@ -126,7 +128,7 @@ class Parser(object):
     def match(self, char):
         if self.look != char:
             self.error("Character '" + str(char) + "' expected, got '"
-                       + self.look + "' instead")
+                       + str(self.look) + "' instead")
         self.getchar()
         self.skip_whitespace()
 
@@ -159,14 +161,17 @@ class Parser(object):
         return identifier.getvalue().decode("utf-8")
 
     def parse_bool(self):
-        if self.look in _TRUE:
+        if self.look in _TRUE_T:
+            remaining = _TRUE_RUE
             ret = True
-        elif self.look in _FALSE:
+        elif self.look in _FALSE_F:
+            remaining = _FALSE_ALSE
             ret = False
         else:
             self.error("True or False expected for boolean")
-        while self.look != _NEWLINE and self.look != _EOF:
-            self.getchar()
+        self.getchar()
+        [self.match(c) for c in remaining]
+        self.skip_whitespace()
         return ret
 
     def parse_string(self):
@@ -269,7 +274,7 @@ class Parser(object):
             self.match(_LBRACKET)
             value = self.parse_array_items()
             self.match(_RBRACKET)
-        elif self.look in _BOOL:
+        elif self.look in _BOOL_LEADERS:
             value = self.parse_bool()
         else:
             value = self.parse_number()

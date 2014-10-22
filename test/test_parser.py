@@ -19,6 +19,18 @@ class TestParser(unittest.TestCase):
     def parser(string):
         return wcfg.Parser(six.BytesIO(string.encode("utf-8")))
 
+    def test_parse_valid_booleans(self):
+        booleans = (
+            (u"True", True),
+            (u"true", True),
+            (u"False", False),
+            (u"false", False),
+        )
+        for item, expected in booleans:
+            value = self.parser(item).parse_bool()
+            self.assertEquals(expected, value)
+            self.assertTrue(isinstance(value, bool))
+
     def check_numbers(self, numbers, type_):
         for item, result in numbers:
             value = self.parser(item).parse_number()
