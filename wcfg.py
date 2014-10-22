@@ -130,11 +130,30 @@ class Parser(object):
     def error(self, message):
         raise ParseError(self.line, self.column, message)
 
-    def match(self, char):
+    def _basic_match(self, char, expected_message=None):
         if self.look != char:
-            self.error("Character '" + str(char) + "' expected, got '"
-                       + str(self.look) + "' instead")
+            if expected_message is None:
+                expected_message = "character '" + str(char) + "'"
+            self.error("Unexpected input '" + str(self.look) + "', " +
+                    expected_message + " was expected")
         self.getchar()
+
+    def match(self, char, expected_message=None):
+        self._basic_match(char, expected_message)
+        self.skip_whitespace()
+
+    def match_in(self, chars, expected_message=None):
+        if self.look not in chars:
+            if expected_message is None:
+                expected_message = "one of '" + str(chars) + "'"
+            self.error("Unexpected input '" + str(self.look) + "', " +
+                    expected_message + " was expected")
+        self.getchar()
+        self.skip_whitespace()
+
+    def match_sequence(self, chars, expected_message=None):
+        for char in chars:
+            self._basic_match(char, expected_message)
         self.skip_whitespace()
 
     def getchar(self):
@@ -175,8 +194,7 @@ class Parser(object):
         else:
             self.error("True or False expected for boolean")
         self.getchar()
-        [self.match(c) for c in remaining]
-        self.skip_whitespace()
+        self.match_sequence(remaining, _TRUE if ret else _FALSE)
         return ret
 
     def parse_string(self):
@@ -243,6 +261,7 @@ class Parser(object):
 
             number.write(self.look)
             self.getchar()
+        self.skip_whitespace()
 
         # Return number converted to the most appropriate type.
         number = number.getvalue().decode("ascii")
@@ -293,10 +312,12 @@ class Parser(object):
 
     def parse_keyval_items(self):
         result = {}
+        self.skip_whitespace()
         while self.look != _EOF and self.look != _RBRACE:
             key = self.parse_identifier()
             if self.look == _COLON:
                 self.match(_COLON)
+            self.skip_whitespace()
             result[key] = self.parse_value()
         return result
 
