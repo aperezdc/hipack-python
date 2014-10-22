@@ -145,6 +145,28 @@ class TestParser(unittest.TestCase):
         )
         self.check_strings(strings, six.text_type)
 
+    def test_parse_valid_arrays(self):
+        arrays = (
+            (u"[]", []),
+            (u"[ ]", []),
+            (u"[1]", [1]),
+            (u"[ 1]", [1]),
+            (u"[1 ]", [1]),
+            (u"[ 1 ]", [1]),
+            (u"[1 2]", [1, 2]),
+            (u"[ 1 2]", [1, 2]),
+            (u"[1 2 ]", [1, 2]),
+            (u"[ 1 2 ]", [1, 2]),
+        )
+        for item, expected in arrays:
+            value = self.parser(item).parse_value()
+            self.assertTrue(isinstance(value, list))
+            self.assertListEqual(expected, value)
+            # Replacing the spaces with newlines should work as well.
+            value = self.parser(item.replace(" ", "\n")).parse_value()
+            self.assertTrue(isinstance(value, list))
+            self.assertListEqual(expected, value)
+
 
 class TestDump(unittest.TestCase):
 
