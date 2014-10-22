@@ -14,6 +14,8 @@ Features:
 
 * Small, self-contained, pure Python implementation.
 
+* Compatible with both Python 2.6 and 3.2 (or newer).
+
 
 Grammar
 -------
