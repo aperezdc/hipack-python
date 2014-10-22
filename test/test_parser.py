@@ -202,6 +202,7 @@ class TestDump(unittest.TestCase):
 class TestAPI(unittest.TestCase):
 
     TEST_VALUES = (
+        ({}, ""),
         ({"a": 1, "b": 2}, """\
             a: 1
             b: 2
@@ -237,15 +238,41 @@ class TestAPI(unittest.TestCase):
             """),
     )
 
+    TEST_VALUES_LOADS_ONLY = (
+        ({}, "# This only has a comment"),
+        ({"list": [1, 2, 3]}, "list:[1 2 3]"),
+        ({"list": [1, 2, 3]}, "list: [ 1 2 3 ]"),
+        ({"list": [1, 2, 3]}, """\
+            # Leading comment
+            list: [1 2 3] # Inline comment
+            # Trailing comment
+            """),
+        ({"list": [1, 2, 3]}, """\
+            # This skips the optional colon
+            list [
+                1 2 3
+            ]"""),
+    )
+
+    def get_dumps_test_values(self):
+        for item in self.TEST_VALUES:
+            yield item
+
+    def get_loads_test_values(self):
+        for item in self.TEST_VALUES:
+            yield item
+        for item in self.TEST_VALUES_LOADS_ONLY:
+            yield item
+
     def test_dumps(self):
-        for value, expected in self.TEST_VALUES:
+        for value, expected in self.get_dumps_test_values():
             result = wcfg.dumps(value)
             expected = six.b(dedent(expected))
             self.assertEquals(expected, result)
             self.assertTrue(isinstance(result, bytes))
 
     def test_loads(self):
-        for expected, value in self.TEST_VALUES:
+        for expected, value in self.get_loads_test_values():
             result = wcfg.loads(six.b(dedent(value)))
             self.assertTrue(isinstance(result, dict))
             self.assertDictEqual(expected, result)
