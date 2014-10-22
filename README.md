@@ -17,6 +17,96 @@ Features:
 * Compatible with both Python 2.6 and 3.2 (or newer).
 
 
+Example
+-------
+
+Given the following input file:
+
+```yaml
+# Configuration file for SuperFooBar v3000
+interface {
+  language: "en_US"
+  panes {
+    top: ["menu", "toolbar"]
+    bottom
+      ["statusbar"]
+  }
+  ☺ : True  # Enables emoji
+}
+
+# Configure plug-ins
+plugin: {
+  preview
+  {
+    enabled: true
+    timeout: 500  # Update every 500ms
+  }
+}
+```
+
+Note that the `:` separator in between keys and values is optional, and
+can be omitted. Also, notice how white space —including new lines— are
+completely meaningless and the structure is determined using only braces
+and brackets. Last but not least, a valid key is any Unicode character
+sequence which *does not* include white space or a colon.
+
+The following code can be used to read it into a Python dictionary:
+
+```python
+import wcfg
+with open("superfoobar3000.conf", "rb") as f:
+  config = wcfg.load(f)
+```
+
+Conversions work as expected:
+
+* Sections are converted into dictionaries.
+* Keys are converted conveted to strings.
+* Text in double quotes are converted to strings.
+* Sections enclosed into `{ }` are converted to dictionaries.
+* Arrays enclosed into `[ ]` are converted to lists.
+* Numbers are converted either to `int` or `float`, whichever is more
+  appropriate.
+* Boolean values are converted to `bool`.
+
+The following can be used to convert a Python dictionary into its textual
+representation:
+
+```python
+users = {
+  "peter": {
+    "uid": 1000
+    "name": "Peter Jøglund",
+    "groups": ["wheel", "peter"],
+  },
+  "root": {
+    "uid": 0
+    "groups": ["root"],
+  }
+}
+
+import wcfg
+text = wcfg.dumps(users)
+```
+
+When generating a textual representation, the keys of each dictionary will
+be sorted, to guarantee that the generated output is stable. The dictionary
+from the previous snippet would be written in text form as follows:
+
+```yaml
+peter: {
+  name: "Peter Jøglund"
+  groups: ["wheel" "peter"]
+  uid: 1000
+}
+root: {
+  groups: ["root"]
+  uid: 0
+}
+```
+
+
+
 Grammar
 -------
 
