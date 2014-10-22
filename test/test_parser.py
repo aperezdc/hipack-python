@@ -234,6 +234,7 @@ class TestDump(unittest.TestCase):
         invalid_keys = (
             42, 3.14,    # Numeric.
             object(),    # Objects.
+            object,      # Classes.
             True, False, # Booleans.
             [], (), {},  # Collections.
         )
@@ -249,6 +250,28 @@ class TestDump(unittest.TestCase):
         for key in invalid_keys:
             with self.assertRaises(ValueError):
                 wcfg.dumps({ key: True })
+
+    def test_dump_non_dict(self):
+        invalid_values = (
+            "string",
+            42, 3.14,    # Numbers.
+            object(),    # Objects.
+            object,      # Classes.
+            True, False, # Booleans.
+            [], (),      # Non-dict collections.
+        )
+        for value in invalid_values:
+            with self.assertRaises(TypeError):
+                wcfg.dumps(value)
+
+    def test_invalid_values(self):
+        invalid_values = (
+            object(),    # Objects.
+            object,      # Classes.
+        )
+        for value in invalid_values:
+            with self.assertRaises(TypeError):
+                wcfg.dumps({ "value": value })
 
 
 class TestAPI(unittest.TestCase):
