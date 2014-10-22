@@ -59,9 +59,13 @@ syntax](https://en.wikipedia.org/wiki/Extended_Backus%E2%80%93Naur_Form):
            | sign, number body
            | number body
 
+    boolean = "True" | "False"
+            | "true" | "false"
+
     value = "\"", { string character }, "\""
           | "[", { value } "]"
           | "{", { key-value pair }, "}"
+          | boolean
           | number
 
     input = "{", { key-value pair }, "}"
