@@ -11,7 +11,7 @@
 used in libwheel
 """
 
-__version__ = 1
+__version__ = 2
 
 import six
 import string
