@@ -167,6 +167,38 @@ class TestParser(unittest.TestCase):
             self.assertTrue(isinstance(value, list))
             self.assertListEqual(expected, value)
 
+    def test_parse_invalid_numbers(self):
+        invalid_numbers = (
+            u"", u"-", u"+", u"-+", u"a", u"☺", u"-.", u".", u"e", u".e",
+            u"+e", u"-e", u"-.e", u"+.e", u"e+", u"e-", u".-e", u".+e",
+            u"--", u"++", u"+1e3.", u"..1", u"1.2.", u"1..2", u"\"foo\"",
+            u"True", u"False", u"{}", u"[]", u"()", u"0xx00", "0.1AeA3",
+            "-0x3", "-032", u"ee", u"1ee", u"1e1e1",
+        )
+        for item in invalid_numbers:
+            with self.assertRaises(wcfg.ParseError):
+                self.parser(item).parse_number()
+
+    def test_parse_invalid_booleans(self):
+        invalid_booleans = (
+            u"Tr", u"TRUE", u"TrUe", u"TruE", u"TrUE",
+            u"Fa", u"FALSE", u"FaLSE", u"FaLsE", u"FalsE",
+            u"1", u"0", u"\"True\"", u"\"False\"",
+        )
+        for item in invalid_booleans:
+            with self.assertRaises(wcfg.ParseError):
+                self.parser(item).parse_bool()
+
+    def test_parse_invalid_strings(self):
+        invalid_strings = (
+            u"\"",     # Unterminated.
+            u"\"a",    # Ditto.
+            u"\"\\\"", # Ditto.
+        )
+        for item in invalid_strings:
+            with self.assertRaises(wcfg.ParseError):
+                self.parser(item).parse_string()
+
 
 class TestDump(unittest.TestCase):
 

@@ -43,7 +43,9 @@ _FALSE = six.b("False")
 
 
 whitespaces = six.b(string.whitespace)
-digits = six.b(string.digits)
+_HEX_CHARS = six.b("abcdefABCDEF")
+_NUMBER_CHARS = six.b(string.digits) + \
+        _HEX_CHARS + _DOT + _NUMBER_EXP + _NUMBER_SIGNS + _HEX_X
 
 
 def _dump_value(value, stream, indent):
@@ -139,7 +141,7 @@ class Parser(object):
             if expected_message is None:
                 expected_message = "character '" + str(char) + "'"
             self.error("Unexpected input '" + str(self.look) + "', " +
-                    expected_message + " was expected")
+                    str(expected_message) + " was expected")
         self.getchar()
 
     def match(self, char, expected_message=None):
@@ -151,7 +153,7 @@ class Parser(object):
             if expected_message is None:
                 expected_message = "one of '" + str(chars) + "'"
             self.error("Unexpected input '" + str(self.look) + "', " +
-                    expected_message + " was expected")
+                    str(expected_message) + " was expected")
         self.getchar()
         self.skip_whitespace()
 
@@ -229,23 +231,21 @@ class Parser(object):
         # Detect octal and hexadecimal numbers.
         is_hex = False
         is_octal = False
-        accepted_chars = digits + _DOT + _NUMBER_EXP
-        if not has_sign and self.look == _ZERO:
+        if self.look == _ZERO:
             number.write(self.look)
             self.getchar()
             if self.look in _HEX_X:
                 is_hex = True
-                accepted_chars = six.b(string.hexdigits)
                 number.write(self.look)
                 self.getchar()
             else:
                 is_octal = True
-                accepted_chars = six.b(string.octdigits)
 
         # Read the rest of the number.
         dot_seen = False
         exp_seen = False
-        while self.look != _EOF and self.look in accepted_chars:
+        hexchar_seen = False
+        while self.look != _EOF and self.look in _NUMBER_CHARS:
             if self.look in _NUMBER_EXP and not is_hex:
                 if exp_seen:
                     self.error("Malformed number at '" + str(self.look) + "'")
@@ -262,6 +262,8 @@ class Parser(object):
                 if dot_seen:
                     self.error("Malformed number at '" + str(self.look) + "'")
                 dot_seen = True
+            elif self.look in _HEX_CHARS:
+                hexchar_seen = True
 
             number.write(self.look)
             self.getchar()
@@ -269,26 +271,31 @@ class Parser(object):
 
         # Return number converted to the most appropriate type.
         number = number.getvalue().decode("ascii")
-        if is_hex:
-            assert not is_octal
-            assert not exp_seen
-            assert not dot_seen
-            return int(number, 16)
-        elif is_octal:
-            assert not is_hex
-            assert not exp_seen
-            assert not dot_seen
-            return int(number, 8)
-        elif dot_seen or exp_seen:
-            assert not is_hex
-            assert not is_octal
-            return float(number)
-        else:
-            assert not is_hex
-            assert not is_octal
-            assert not exp_seen
-            assert not dot_seen
-            return int(number)
+        try:
+            if is_hex:
+                assert not is_octal
+                if exp_seen or dot_seen or has_sign:
+                    raise ValueError(str(number))
+                return int(number, 16)
+            elif is_octal:
+                assert not is_hex
+                if dot_seen or exp_seen or has_sign:
+                    raise ValueError(str(number))
+                return int(number, 8)
+            elif dot_seen or exp_seen:
+                assert not is_hex
+                assert not is_octal
+                if hexchar_seen:
+                    raise ValueError(str(number))
+                return float(number)
+            else:
+                assert not is_hex
+                assert not is_octal
+                assert not exp_seen
+                assert not dot_seen
+                return int(number)
+        except ValueError:
+            self.error("Malformed number: '" + str(number) + "'")
 
     def parse_value(self):
         value = None
