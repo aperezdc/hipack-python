@@ -227,3 +227,7 @@ class TestAPI(unittest.TestCase):
             result = wcfg.loads(six.b(dedent(value)))
             self.assertTrue(isinstance(result, dict))
             self.assertDictEqual(expected, result)
+            # Passing Unicode text should work as well.
+            result = wcfg.loads(dedent(value))
+            self.assertTrue(isinstance(result, dict))
+            self.assertDictEqual(expected, result)
