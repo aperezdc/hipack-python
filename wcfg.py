@@ -38,6 +38,9 @@ _TRUE_T = six.b("tT")
 _TRUE_RUE = (six.b("r"), six.b("u"), six.b("e"))
 _FALSE_F = six.b("fF")
 _FALSE_ALSE = (six.b("a"), six.b("l"), six.b("s"), six.b("e"))
+_TRUE = six.b("True")
+_FALSE = six.b("False")
+
 
 whitespaces = six.b(string.whitespace)
 digits = six.b(string.digits)
@@ -71,6 +74,8 @@ def _dump_value(value, stream, indent):
         _dump_dict(value, stream, indent + 1)
         stream.write(_SPACE * (indent * 2))
         stream.write(_RBRACE)
+    elif isinstance(value, bool):
+        stream.write(_TRUE if value else _FALSE)
     else:
         raise TypeError("Values of type " + str(type(value)) +
                         " cannot be dumped")

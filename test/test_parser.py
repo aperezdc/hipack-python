@@ -156,6 +156,8 @@ class TestDump(unittest.TestCase):
 
     def test_dump_values(self):
         values = (
+            (True, b"True"),
+            (False, b"False"),
             (123, b"123"),
             (-123, b"-123"),
             (0xFF, b"255"),  # An hex literal in Python is still an integer.
@@ -188,6 +190,17 @@ class TestAPI(unittest.TestCase):
                   b: {
                   }
                 }
+                """),
+            ({"a": {"t": True}, "nums": (1e4, -2, 0xA), "f": False}, """\
+                a: {
+                  t: True
+                }
+                f: False
+                nums: [
+                  10000.0
+                  -2
+                  10
+                ]
                 """),
             ({"a": ({"b": 1}, [1, 2, 3])}, """\
                 a: [
