@@ -1,6 +1,8 @@
 wcfg
 ====
 
+[![Build Status](https://drone.io/github.com/aperezdc/python-wcfg/status.png)](https://drone.io/github.com/aperezdc/python-wcfg/latest)
+
 `wcfg` is a small module to parse hierarchical data from text files, and it
 is particularly suitable for configuration files.
 
