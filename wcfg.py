@@ -47,7 +47,7 @@ def _dump_value(value, stream, indent):
         stream.write(_DQUOTE)
         stream.write(value.encode("utf-8").replace(_DQUOTE, _SLASHDQUOTE))
         stream.write(_DQUOTE)
-    elif isinstance(value, six.string_types):
+    elif isinstance(value, six.string_types) or isinstance(value, bytes):
         stream.write(_DQUOTE)
         stream.write(value.replace(_DQUOTE, _SLASHDQUOTE))
         stream.write(_DQUOTE)

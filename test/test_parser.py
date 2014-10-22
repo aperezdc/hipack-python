@@ -150,6 +150,7 @@ class TestDump(unittest.TestCase):
             (0o5, b"5"),     # Ditto for octals in Python.
             (0.5, b"0.5"),
             (-0.5, b"-0.5"),
+            (six.b("byte string"), b'"byte string"'),
             (u"a string", b'"a string"'),
             (u"double quote: \"", b'"double quote: \\""'),
             ((1, 2, 3), b"[\n  1\n  2\n  3\n]"),
