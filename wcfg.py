@@ -51,6 +51,8 @@ _NUMBER_CHARS = six.b(string.digits) + \
 def _dump_value(value, stream, indent):
     if isinstance(value, float):
         stream.write(str(value).encode("ascii"))
+    elif isinstance(value, bool):
+        stream.write(_TRUE if value else _FALSE)
     elif isinstance(value, six.integer_types):
         stream.write(str(value).encode("ascii"))
     elif isinstance(value, six.text_type):
@@ -76,8 +78,6 @@ def _dump_value(value, stream, indent):
         _dump_dict(value, stream, indent + 1)
         stream.write(_SPACE * (indent * 2))
         stream.write(_RBRACE)
-    elif isinstance(value, bool):
-        stream.write(_TRUE if value else _FALSE)
     else:
         raise TypeError("Values of type " + str(type(value)) +
                         " cannot be dumped")
@@ -136,9 +136,9 @@ class Parser(object):
     def error(self, message):
         raise ParseError(self.line, self.column, message)
 
-    def _basic_match(self, char, expected_message=None):
+    def _basic_match(self, char, expected_message):
         if self.look != char:
-            if expected_message is None:
+            if expected_message is None:  # pragma: no cover
                 expected_message = "character '" + str(char) + "'"
             self.error("Unexpected input '" + str(self.look) + "', " +
                     str(expected_message) + " was expected")
@@ -148,7 +148,7 @@ class Parser(object):
         self._basic_match(char, expected_message)
         self.skip_whitespace()
 
-    def match_in(self, chars, expected_message=None):
+    def match_in(self, chars, expected_message=None):  # pragma: no cover
         if self.look not in chars:
             if expected_message is None:
                 expected_message = "one of '" + str(chars) + "'"
@@ -244,7 +244,6 @@ class Parser(object):
         # Read the rest of the number.
         dot_seen = False
         exp_seen = False
-        hexchar_seen = False
         while self.look != _EOF and self.look in _NUMBER_CHARS:
             if self.look in _NUMBER_EXP and not is_hex:
                 if exp_seen:
@@ -256,17 +255,14 @@ class Parser(object):
                 if self.look in _NUMBER_SIGNS:
                     number.write(self.look)
                     self.getchar()
-                continue
-
-            if self.look == _DOT:
-                if dot_seen:
-                    self.error("Malformed number at '" + str(self.look) + "'")
-                dot_seen = True
-            elif self.look in _HEX_CHARS:
-                hexchar_seen = True
-
-            number.write(self.look)
-            self.getchar()
+            else:
+                if self.look == _DOT:
+                    if dot_seen:
+                        self.error("Malformed number at '" +
+                                str(self.look) + "'")
+                    dot_seen = True
+                number.write(self.look)
+                self.getchar()
         self.skip_whitespace()
 
         # Return number converted to the most appropriate type.
@@ -285,8 +281,6 @@ class Parser(object):
             elif dot_seen or exp_seen:
                 assert not is_hex
                 assert not is_octal
-                if hexchar_seen:
-                    raise ValueError(str(number))
                 return float(number)
             else:
                 assert not is_hex

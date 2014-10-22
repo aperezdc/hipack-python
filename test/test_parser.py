@@ -173,7 +173,7 @@ class TestParser(unittest.TestCase):
             u"+e", u"-e", u"-.e", u"+.e", u"e+", u"e-", u".-e", u".+e",
             u"--", u"++", u"+1e3.", u"..1", u"1.2.", u"1..2", u"\"foo\"",
             u"True", u"False", u"{}", u"[]", u"()", u"0xx00", "0.1AeA3",
-            "-0x3", "-032", u"ee", u"1ee", u"1e1e1",
+            "-0x3", "-032", u"ee", u"1ee", u"1e1e1", u"0.1x2", u"1x.0",
         )
         for item in invalid_numbers:
             with self.assertRaises(wcfg.ParseError):
