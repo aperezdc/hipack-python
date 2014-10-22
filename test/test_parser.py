@@ -10,6 +10,7 @@
 import unittest
 import wcfg
 import six
+from textwrap import dedent
 
 
 class TestParser(unittest.TestCase):
@@ -131,3 +132,37 @@ class TestParser(unittest.TestCase):
             (u"escaped UTF-8: \\☺", u"escaped UTF-8: ☺"),
         )
         self.check_strings(strings, six.text_type)
+
+
+class TestAPI(unittest.TestCase):
+
+    def test_dumps(self):
+        values = (
+            ({"a": 1, "b": 2}, """\
+                a: 1
+                b: 2
+                """),
+            ({"a": {"b": {}}}, """\
+                a: {
+                  b: {
+                  }
+                }
+                """),
+            ({"a": ({"b": 1}, [1, 2, 3])}, """\
+                a: [
+                  {
+                    b: 1
+                  }
+                  [
+                    1
+                    2
+                    3
+                  ]
+                ]
+                """),
+        )
+        for value, expected in values:
+            result = wcfg.dumps(value)
+            expected = six.b(dedent(expected))
+            self.assertEquals(expected, result)
+            self.assertTrue(isinstance(result, bytes))

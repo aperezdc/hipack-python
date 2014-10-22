@@ -55,10 +55,10 @@ def _dump_value(value, stream, indent):
         stream.write(_LBRACKET)
         for item in value:
             stream.write(_NEWLINE)
-            stream.write(_SPACE * (indent * 2))
-            _dump_value(item, stream, indent)
+            stream.write(_SPACE * ((indent + 1) * 2))
+            _dump_value(item, stream, indent + 1)
         stream.write(_NEWLINE)
-        stream.write(_SPACE * ((indent - 1) * 2))
+        stream.write(_SPACE * (indent * 2))
         stream.write(_RBRACKET)
     elif isinstance(value, dict):
         stream.write(_LBRACE)
@@ -71,25 +71,33 @@ def _dump_value(value, stream, indent):
                         " cannot be dumped")
 
 
-def _dump_dict(value, stream, indent=0):
-    for k, v in six.iteritems(value):
-        if not isinstance(k, six.string_types):
-            if isinstance(k, six.text_type):
-                k = k.encode("utf-8")
-            else:
-                raise TypeError("Key is not a string: " + repr(k))
-        if indent > 0:
-            stream.write(_SPACE * (indent * 2))
+def _dump_dict(value, stream, indent):
+    # Dictionaries are always dumped with their keys sorted,
+    # in order to produce a predictible output.
+    for k in sorted(six.iterkeys(value)):
+        v = value[k]
+        if isinstance(k, six.text_type):
+            k = k.encode("utf-8")
+        elif not isinstance(k, six.string_types):
+            raise TypeError("Key is not a string: " + repr(k))
+        stream.write(_SPACE * (indent * 2))
         stream.write(k)
+        stream.write(_COLON)
         stream.write(_SPACE)
-        _dump_value(v, stream, indent + 1)
+        _dump_value(v, stream, indent)
         stream.write(_NEWLINE)
 
 
 def dump(value, stream):
     if not isinstance(value, dict):
         raise TypeError("Dictionary value expected")
-    _dump_dict(value, stream)
+    _dump_dict(value, stream, 0)
+
+
+def dumps(value):
+    output = six.BytesIO()
+    dump(value, output)
+    return output.getvalue()
 
 
 class ParseError(ValueError):
@@ -269,12 +277,6 @@ class Parser(object):
 
 def load(stream):
     return Parser(stream).parse_keyval_items()
-
-
-def dumps(value):
-    output = six.BytesIO()
-    dump(value, output)
-    return output.getvalue()
 
 
 def loads(bytestring):
