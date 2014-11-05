@@ -185,6 +185,21 @@ class TestParser(unittest.TestCase):
             self.assertTrue(isinstance(value, list))
             self.assertListEqual(expected, value)
 
+    def test_parse_invalid_arrays(self):
+        invalid_arrays = (
+            u"[",      # Unterminated array.
+            u"[1",     # Ditto.
+            u"[1 2",   # Ditto.
+            u"[[]",    # Unterminated inner array.
+            u"(1)",    # Not an array.
+            u"[:]",    # Invalid value inside array.
+            u"[\"]",   # Unterminated string inside array.
+            u"[\"]\"", # Unbalanced double-quote and brackets.
+        )
+        for item in invalid_arrays:
+            with self.assertRaises(wcfg.ParseError):
+                self.parser(item).parse_value()
+
     def test_parse_invalid_arrays_with_commas(self):
         invalid_arrays = (
             u"[,]",     # Array with holes.
