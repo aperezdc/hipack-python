@@ -17,6 +17,7 @@ import six
 import string
 
 _SPACE = six.b(" ")
+_COMMA = six.b(",")
 _COLON = six.b(":")
 _LBRACE = six.b("{")
 _RBRACE = six.b("}")
@@ -313,6 +314,10 @@ class Parser(object):
         result = []
         while self.look != _EOF and self.look != _RBRACKET:
             result.append(self.parse_value())
+            self.skip_whitespace()
+            if self.look == _COMMA:
+                self.getchar()
+                self.skip_whitespace()
         return result
 
     def parse_keyval_items(self):

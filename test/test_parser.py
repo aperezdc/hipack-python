@@ -167,6 +167,38 @@ class TestParser(unittest.TestCase):
             self.assertTrue(isinstance(value, list))
             self.assertListEqual(expected, value)
 
+    def test_parse_valid_arrays_with_commas(self):
+        arrays = (
+            (u"[1,]", [1]),        # Dangling commas are allowed.
+            (u"[1,2]", [1, 2]),    # Spaces around commas are optional.
+            (u"[1, 2]", [1, 2]),   # Space can be provided, of course...
+            (u"[1 , 2]", [1, 2]),  # ...even on both sides
+            (u"[1\n,2]", [1, 2]),  # Newlines and commas.
+            (u"[1,\n2]", [1, 2]),  # Ditto.
+            (u"[1\t,2]", [1, 2]),  # Tabs around commas.
+            (u"[1,2,]", [1, 2]),   # More than one item and dangling comma.
+            (u"[1, 2, ]", [1, 2]), # Spaces after dangling comma.
+            (u"[1 2,3]", [1,2,3]), # Mixed spaces and commas.
+        )
+        for item, expected in arrays:
+            value = self.parser(item).parse_value()
+            self.assertTrue(isinstance(value, list))
+            self.assertListEqual(expected, value)
+
+    def test_parse_invalid_arrays_with_commas(self):
+        invalid_arrays = (
+            u"[,]",     # Array with holes.
+            u"[ ,]",    # Ditto.
+            u"[, ]",    # Ditto.
+            u"[,,]",    # Multiple holes.
+            u"[\v,\t]", # Ditto.
+            u"[,1]",    # Leading comma.
+            u"[1,,]",   # Double trailing comma.
+        )
+        for item in invalid_arrays:
+            with self.assertRaises(wcfg.ParseError):
+                self.parser(item).parse_value()
+
     def test_parse_invalid_numbers(self):
         invalid_numbers = (
             u"", u"-", u"+", u"-+", u"a", u"☺", u"-.", u".", u"e", u".e",
