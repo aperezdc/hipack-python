@@ -155,7 +155,7 @@ syntax](https://en.wikipedia.org/wiki/Extended_Backus%E2%80%93Naur_Form):
             | "true" | "false"
 
     value = "\"", { string character }, "\""
-          | "[", { value } "]"
+          | "[", { (value | value ",") } "]"
           | "{", { key-value pair }, "}"
           | boolean
           | number
