@@ -22,6 +22,19 @@ Features:
 * Compatible with both Python 2.6 and 3.2 (or newer).
 
 
+Related projects
+================
+
+Editor support
+--------------
+
+Syntax highlighting for the ``wcfg`` file format and other goodies are
+for the following text editors:
+
+* **Vim**: `vim-wcfg <https://github.com/aperezdc/vim-wcfg>`__
+
+
+
 Example
 =======
 
