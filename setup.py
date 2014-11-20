@@ -8,12 +8,14 @@
 # better the MIT/X11 license.
 
 from setuptools import setup
+from codecs import open
 from os import path
 
 
 def distrib_file(*relpath):
     try:
-        return open(path.join(path.dirname(__file__), *relpath), "rU")
+        return open(path.join(path.dirname(__file__), *relpath), "rU", \
+                encoding="utf-8")
     except:
         class DummyFile(object):
             read = lambda self: ""
