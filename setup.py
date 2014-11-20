@@ -20,7 +20,7 @@ def distrib_file(*relpath):
     try:
         return open(path.join(path.dirname(__file__), *relpath), "rU", \
                 encoding="utf-8")
-    except:
+    except IOError:
         class DummyFile(object):
             read = lambda self: ""
         return DummyFile()
