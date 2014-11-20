@@ -2,9 +2,14 @@
 wcfg
 ====
 
-.. image:: https://drone.io/github.com/aperezdc/python-wcfg/status.png
-   :target: https://drone.io/github.com/aperezdc/python-wcfg/latest
+.. image:: https://img.shields.io/travis/aperezdc/python-wcfg.svg?style=flat
+   :target: https://travis-ci.org/aperezdc/python-wcfg
    :alt: Build Status
+
+.. image:: https://img.shields.io/coveralls/aperezdc/python-wcfg/master.svg?style=flat
+   :target: https://coveralls.io/r/aperezdc/python-wcfg?branch=master
+   :alt: Code Coverage
+
 
 ``wcfg`` is a small module to parse hierarchical data from text files, and it
 is particularly suitable for configuration files.
