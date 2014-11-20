@@ -10,6 +10,10 @@
 from setuptools import setup
 from codecs import open
 from os import path
+import sys
+
+# Make "python setup.py test" always pick out tests directory first
+sys.path.insert(0, path.abspath(path.dirname(__file__)))
 
 
 def distrib_file(*relpath):
@@ -46,6 +50,7 @@ setup(
     py_modules=["wcfg"],
     install_requires=["six>=1.8.0"],
     license="Dual GPL3 / MIT",
+    test_suite="test",
     classifiers=[
         "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
