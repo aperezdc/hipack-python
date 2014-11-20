@@ -1,0 +1,11 @@
+language: python
+python:
+  - "2.7"
+  - "3.4"
+  - "pypy"
+install:
+  - pip install green coverage coveralls
+  - pip install -r requirements.txt
+script:
+  - green -r -v -s 8
+after_success: coveralls
