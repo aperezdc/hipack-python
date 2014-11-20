@@ -40,7 +40,7 @@ Example
 
 Given the following input file:
 
-.. code-block:: yaml
+.. code-block::
 
   # Configuration file for SuperFooBar v3000
   interface {
@@ -113,7 +113,7 @@ When generating a textual representation, the keys of each dictionary will
 be sorted, to guarantee that the generated output is stable. The dictionary
 from the previous snippet would be written in text form as follows:
 
-.. code-block:: yaml
+.. code-block::
 
   peter: {
     name: "Peter Jøglund"
