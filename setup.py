@@ -51,6 +51,7 @@ setup(
     install_requires=["six>=1.8.0"],
     license="Dual GPL3 / MIT",
     test_suite="test",
+    tests_require=["unittest2>=0.8.0"],
     classifiers=[
         "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",

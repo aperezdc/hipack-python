@@ -4,15 +4,16 @@
 #
 # Copyright © 2014 Adrian Perez <aperez@igalia.com>
 #
-# Distributed under terms of the MIT license.
+# Distributed under terms of the GPL3 license or, if that suits you
+# better the MIT/X11 license.
 
-import unittest
+import unittest2
 import wcfg
 from os import path
 from os import listdir
 
 
-class TestConfigFiles(unittest.TestCase):
+class TestConfigFiles(unittest2.TestCase):
     def check_file(self, filepath):
         f = open(filepath, "rb")
         value = wcfg.load(f)

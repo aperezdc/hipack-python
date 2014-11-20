@@ -7,13 +7,13 @@
 # Distributed under terms of the GPL3 license or, if that suits you
 # better the MIT/X11 license.
 
-import unittest
+import unittest2
 import wcfg
 import six
 from textwrap import dedent
 
 
-class TestParser(unittest.TestCase):
+class TestParser(unittest2.TestCase):
 
     @staticmethod
     def parser(string):
@@ -247,7 +247,7 @@ class TestParser(unittest.TestCase):
                 self.parser(item).parse_string()
 
 
-class TestDump(unittest.TestCase):
+class TestDump(unittest2.TestCase):
 
     @staticmethod
     def dump_value(value):
@@ -321,7 +321,7 @@ class TestDump(unittest.TestCase):
                 wcfg.dumps({ "value": value })
 
 
-class TestAPI(unittest.TestCase):
+class TestAPI(unittest2.TestCase):
 
     TEST_VALUES = (
         ({}, ""),
