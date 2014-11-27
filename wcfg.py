@@ -67,17 +67,25 @@ def _dump_value(value, stream, indent):
     elif isinstance(value, (tuple, list)):
         stream.write(_LBRACKET)
         for item in value:
+            if indent >= 0:
+                stream.write(_NEWLINE)
+                stream.write(_SPACE * ((indent + 1) * 2))
+                _dump_value(item, stream, indent + 1)
+            else:
+                _dump_value(item, stream, indent)
+                stream.write(_COMMA)
+        if indent >= 0:
             stream.write(_NEWLINE)
-            stream.write(_SPACE * ((indent + 1) * 2))
-            _dump_value(item, stream, indent + 1)
-        stream.write(_NEWLINE)
-        stream.write(_SPACE * (indent * 2))
+            stream.write(_SPACE * (indent * 2))
         stream.write(_RBRACKET)
     elif isinstance(value, dict):
         stream.write(_LBRACE)
-        stream.write(_NEWLINE)
-        _dump_dict(value, stream, indent + 1)
-        stream.write(_SPACE * (indent * 2))
+        if indent >= 0:
+            stream.write(_NEWLINE)
+            _dump_dict(value, stream, indent + 1)
+            stream.write(_SPACE * (indent * 2))
+        else:
+            _dump_dict(value, stream, indent)
         stream.write(_RBRACE)
     else:
         raise TypeError("Values of type " + str(type(value)) +
@@ -100,20 +108,21 @@ def _dump_dict(value, stream, indent):
         stream.write(_SPACE * (indent * 2))
         stream.write(k)
         stream.write(_COLON)
-        stream.write(_SPACE)
+        if indent >= 0:
+            stream.write(_SPACE)
         _dump_value(v, stream, indent)
-        stream.write(_NEWLINE)
+        stream.write(_NEWLINE if indent >= 0 else _SPACE)
 
 
-def dump(value, stream):
+def dump(value, stream, indent=True):
     if not isinstance(value, dict):
         raise TypeError("Dictionary value expected")
-    _dump_dict(value, stream, 0)
+    _dump_dict(value, stream, 0 if indent else -1)
 
 
-def dumps(value):
+def dumps(value, indent=True):
     output = six.BytesIO()
-    dump(value, output)
+    dump(value, output, indent)
     return output.getvalue()
 
 

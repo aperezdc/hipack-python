@@ -324,18 +324,24 @@ class TestDump(unittest2.TestCase):
 class TestAPI(unittest2.TestCase):
 
     TEST_VALUES = (
-        ({}, ""),
-        ({"a": 1, "b": 2}, """\
+        ({}, "", ""),
+        ({"a": 1, "b": 2},
+            "a:1 b:2 ",
+            """\
             a: 1
             b: 2
             """),
-        ({"a": {"b": {}}}, """\
+        ({"a": {"b": {}}},
+            "a:{b:{} } ",
+            """\
             a: {
               b: {
               }
             }
             """),
-        ({"a": {"t": True}, "nums": [1e4, -2, 0xA], "f": False}, """\
+        ({"a": {"t": True}, "nums": [1e4, -2, 0xA], "f": False},
+            "a:{t:True } f:False nums:[10000.0,-2,10,] ",
+            """\
             a: {
               t: True
             }
@@ -346,7 +352,9 @@ class TestAPI(unittest2.TestCase):
               10
             ]
             """),
-        ({"a": [{"b": 1}, [1, 2, 3]]}, """\
+        ({"a": [{"b": 1}, [1, 2, 3]]},
+            "a:[{b:1 },[1,2,3,],] ",
+            """\
             a: [
               {
                 b: 1
@@ -381,16 +389,22 @@ class TestAPI(unittest2.TestCase):
             yield item
 
     def get_loads_test_values(self):
-        for item in self.TEST_VALUES:
-            yield item
+        for a, b, c in self.TEST_VALUES:
+            yield a, b
+            yield a, c
         for item in self.TEST_VALUES_LOADS_ONLY:
             yield item
 
     def test_dumps(self):
-        for value, expected in self.get_dumps_test_values():
+        for value, expected_noindent, expected \
+                in self.get_dumps_test_values():
             result = wcfg.dumps(value)
             expected = six.b(dedent(expected))
             self.assertEquals(expected, result)
+            self.assertTrue(isinstance(result, bytes))
+            expected_noindent = six.b(dedent(expected_noindent))
+            result = wcfg.dumps(value, False)
+            self.assertEquals(expected_noindent, result)
             self.assertTrue(isinstance(result, bytes))
 
     def test_loads(self):
