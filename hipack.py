@@ -10,7 +10,7 @@
 """This module provide a pythonic way to parse HiPack messages.
 """
 
-__version__ = 7
+__version__ = 8
 
 import six
 import string
