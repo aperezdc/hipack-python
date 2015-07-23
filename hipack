@@ -6,6 +6,7 @@
 #
 # Distributed under terms of the MIT license.
 
+from six import print_
 import hipack
 
 
@@ -76,9 +77,7 @@ if __name__ == "__main__":
     import sys
     options, args = parser.parse_args()
     if options.formats:
-        for name in sorted(formats.keys()):
-            sys.stdout.write(name)
-            sys.stdout.write("\n")
+        [print_(name) for name in sorted(formats.keys())]
     else:
         try:
             load = formats[options.from_format][0]
