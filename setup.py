@@ -48,6 +48,7 @@ setup(
     author_email="aperez@igalia.com",
     url="https://github.com/aperezdc/hipack-python",
     py_modules=["hipack"],
+    scripts=["hipack"],
     install_requires=["six>=1.8.0"],
     license="Dual GPL3 / MIT",
     test_suite="test",
