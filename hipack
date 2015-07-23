@@ -6,6 +6,8 @@
 #
 # Distributed under terms of the MIT license.
 
+import hipack
+
 
 def import_format(formatname, modulename=None):
     from importlib import import_module
@@ -18,15 +20,12 @@ def import_format(formatname, modulename=None):
                 + modulename + "' module, which is not installed")
 
 def load_hipack(fd):
-    import hipack
     return hipack.load(fd)
 
 def save_hipack(data, fd):
-    import hipack
     hipack.dump(data, fd)
 
 def save_hipack_compact(data, fd):
-    import hipack
     hipack.dump(data, fd, indent=False)
 
 def load_json(fd):
