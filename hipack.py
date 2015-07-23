@@ -2,13 +2,12 @@
 # -*- coding: utf-8 -*-
 # vim:fenc=utf-8
 #
-# Copyright © 2014 Adrian Perez <aperez@igalia.com>
+# Copyright © 2014-2015 Adrian Perez <aperez@igalia.com>
 #
 # Distributed under terms of the GPL3 license or, if that suits you
 # better the MIT/X11 license.
 
-"""This module provide a pythonic way to parse configuration files
-used in libwheel
+"""This module provide a pythonic way to parse HiPack messages.
 """
 
 __version__ = 6

@@ -1,43 +1,27 @@
-====
-wcfg
-====
+===============
+ hipack-python
+===============
 
-.. image:: https://img.shields.io/travis/aperezdc/python-wcfg.svg?style=flat
-   :target: https://travis-ci.org/aperezdc/python-wcfg
+.. image:: https://img.shields.io/travis/aperezdc/hipack-python.svg?style=flat
+   :target: https://travis-ci.org/aperezdc/hipack-python
    :alt: Build Status
 
-.. image:: https://img.shields.io/coveralls/aperezdc/python-wcfg/master.svg?style=flat
-   :target: https://coveralls.io/r/aperezdc/python-wcfg?branch=master
+.. image:: https://img.shields.io/coveralls/aperezdc/hipack-python/master.svg?style=flat
+   :target: https://coveralls.io/r/aperezdc/hipack-python?branch=master
    :alt: Code Coverage
 
 
-``wcfg`` is a small module to parse hierarchical data from text files, and it
-is particularly suitable for configuration files.
+``hipack`` is a Python module to work with the `HiPack <http://hipack.org>`_
+serialization format. The API is intentionally similar to that of the standard
+``json`` and ``pickle`` modules.
 
 Features:
 
-* Text-based, hierarchical format, with simple syntax which is designed to
-  be easy to parse both by programs and humans.
-
-* Both reading *and* writing back is supported. Written data is guaranteed
-  to be readable back to its original representation.
+* Both reading, and writing HiPack is supported.
 
 * Small, self-contained, pure Python implementation.
 
-* Compatible with both Python 2.6 and 3.2 (or newer).
-
-
-Related projects
-================
-
-Editor support
---------------
-
-Syntax highlighting for the ``wcfg`` file format and other goodies are
-for the following text editors:
-
-* **Vim**: `vim-wcfg <https://github.com/aperezdc/vim-wcfg>`__
-
+* Compatible with both Python 2.6 (or newer), and 3.2 (or newer).
 
 
 Example
@@ -79,9 +63,9 @@ The following code can be used to read it into a Python dictionary:
 
 .. code-block:: python
 
-  import wcfg
+  import hipack
   with open("superfoobar3000.conf", "rb") as f:
-    config = wcfg.load(f)
+    config = hipack.load(f)
 
 Conversions work as expected:
 
@@ -111,8 +95,8 @@ representation:
     }
   }
 
-  import wcfg
-  text = wcfg.dumps(users)
+  import hipack
+  text = hipack.dumps(users)
 
 When generating a textual representation, the keys of each dictionary will
 be sorted, to guarantee that the generated output is stable. The dictionary
@@ -131,61 +115,3 @@ from the previous snippet would be written in text form as follows:
   }
 
 
-Grammar
-=======
-
-This is the grammar accepted by the parser, in `EBNF syntax
-<https://en.wikipedia.org/wiki/Extended_Backus%E2%80%93Naur_Form>`__::
-
-  identifier = - ( whitespace | ":" )
-
-  string character = - "\""
-
-  key-value pair = identifier, ":", value
-                 | identifier, value
-
-  octal digit = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7"
-
-  digit = octal digit | "8" | "9"
-
-  hexdigit = digit | "a" | "b" | "c" | "d" | "e" | "f"
-                   | "A" | "B" | "C" | "D" | "E" | "F"
-
-  sign = "-" | "+"
-
-  integral number = digit, { digit }
-
-  dotted float = ".", digit, { digit }
-               | digit, ".", { digit }
-
-  exponent = ("e" | "E"), sign, digit, { digit }
-           | ("e" | "E"), digit, { digit }
-
-  float number = dotted float
-               | dotted float, exponent
-               | integral number, exponent
-
-  number body = integral number
-              | float number
-
-  number = "0", ( "x" | "X" ), hex digit, { hex digit }
-         | "0", octal digit, { octal digit }
-         | sign, number body
-         | number body
-
-  boolean = "True" | "False"
-          | "true" | "false"
-
-  value = "\"", { string character }, "\""
-        | "[", { (value | value ",") } "]"
-        | "{", { key-value pair }, "}"
-        | boolean
-        | number
-
-  input = "{", { key-value pair }, "}"
-        | { key-value pair }
-
-Note that comments are not specified in the grammar above does not include
-comments for the sake of simplicity. Comments can appear anywhere except
-inside strings, and they span from the octothorpe sign (``#``) to the end of
-the line.

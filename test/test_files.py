@@ -8,7 +8,7 @@
 # better the MIT/X11 license.
 
 import unittest2
-import wcfg
+import hipack
 from os import path
 from os import listdir
 
@@ -16,7 +16,7 @@ from os import listdir
 class TestConfigFiles(unittest2.TestCase):
     def check_file(self, filepath):
         f = open(filepath, "rb")
-        value = wcfg.load(f)
+        value = hipack.load(f)
         f.close()
         self.assertTrue(isinstance(value, dict))
 

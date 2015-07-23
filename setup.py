@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # vim:fenc=utf-8
 #
-# Copyright © 2014 Adrian Perez <aperez@igalia.com>
+# Copyright © 2014-2015 Adrian Perez <aperez@igalia.com>
 #
 # Distributed under terms of the GPL3 license or, if that suits you
 # better the MIT/X11 license.
@@ -26,8 +26,8 @@ def distrib_file(*relpath):
         return DummyFile()
 
 
-def wcfg_version():
-    for line in distrib_file("wcfg.py"):
+def get_version():
+    for line in distrib_file("hipack.py"):
         if line.startswith("__version__"):
             line = line.split()
             if line[0] == "__version__":
@@ -35,19 +35,19 @@ def wcfg_version():
     return None
 
 
-def wcfg_readme():
-    return distrib_file("README.md").read()
+def get_readme():
+    return distrib_file("README.rst").read()
 
 
 setup(
-    name="wcfg",
-    version=wcfg_version(),
-    description="Parser for hyerarchical text data and configuration files",
-    long_description=wcfg_readme(),
+    name="hipack",
+    version=get_version(),
+    description="Serialization library or the HiPack interchange format",
+    long_description=get_readme(),
     author="Adrian Perez de Castro",
     author_email="aperez@igalia.com",
-    url="https://github.com/aperezdc/python-wcfg",
-    py_modules=["wcfg"],
+    url="https://github.com/aperezdc/hipack-python",
+    py_modules=["hipack"],
     install_requires=["six>=1.8.0"],
     license="Dual GPL3 / MIT",
     test_suite="test",

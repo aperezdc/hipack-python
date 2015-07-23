@@ -8,7 +8,7 @@
 # better the MIT/X11 license.
 
 import unittest2
-import wcfg
+import hipack
 import six
 from textwrap import dedent
 
@@ -17,7 +17,7 @@ class TestParser(unittest2.TestCase):
 
     @staticmethod
     def parser(string):
-        return wcfg.Parser(six.BytesIO(string.encode("utf-8")))
+        return hipack.Parser(six.BytesIO(string.encode("utf-8")))
 
     def test_parse_valid_booleans(self):
         booleans = (
@@ -197,7 +197,7 @@ class TestParser(unittest2.TestCase):
             u"[\"]\"", # Unbalanced double-quote and brackets.
         )
         for item in invalid_arrays:
-            with self.assertRaises(wcfg.ParseError):
+            with self.assertRaises(hipack.ParseError):
                 self.parser(item).parse_value()
 
     def test_parse_invalid_arrays_with_commas(self):
@@ -211,7 +211,7 @@ class TestParser(unittest2.TestCase):
             u"[1,,]",   # Double trailing comma.
         )
         for item in invalid_arrays:
-            with self.assertRaises(wcfg.ParseError):
+            with self.assertRaises(hipack.ParseError):
                 self.parser(item).parse_value()
 
     def test_parse_invalid_numbers(self):
@@ -223,7 +223,7 @@ class TestParser(unittest2.TestCase):
             "-0x3", "-032", u"ee", u"1ee", u"1e1e1", u"0.1x2", u"1x.0",
         )
         for item in invalid_numbers:
-            with self.assertRaises(wcfg.ParseError):
+            with self.assertRaises(hipack.ParseError):
                 self.parser(item).parse_number()
 
     def test_parse_invalid_booleans(self):
@@ -233,7 +233,7 @@ class TestParser(unittest2.TestCase):
             u"1", u"0", u"\"True\"", u"\"False\"",
         )
         for item in invalid_booleans:
-            with self.assertRaises(wcfg.ParseError):
+            with self.assertRaises(hipack.ParseError):
                 self.parser(item).parse_bool()
 
     def test_parse_invalid_strings(self):
@@ -243,7 +243,7 @@ class TestParser(unittest2.TestCase):
             u"\"\\\"", # Ditto.
         )
         for item in invalid_strings:
-            with self.assertRaises(wcfg.ParseError):
+            with self.assertRaises(hipack.ParseError):
                 self.parser(item).parse_string()
 
 
@@ -252,7 +252,7 @@ class TestDump(unittest2.TestCase):
     @staticmethod
     def dump_value(value):
         stream = six.BytesIO()
-        wcfg._dump_value(value, stream, 0)
+        hipack._dump_value(value, stream, 0)
         return stream.getvalue()
 
     def test_dump_values(self):
@@ -287,7 +287,7 @@ class TestDump(unittest2.TestCase):
         )
         for key in invalid_keys:
             with self.assertRaises(TypeError):
-                wcfg.dumps({ key: True })
+                hipack.dumps({ key: True })
 
     def test_invalid_key_values(self):
         invalid_keys = (
@@ -296,7 +296,7 @@ class TestDump(unittest2.TestCase):
         )
         for key in invalid_keys:
             with self.assertRaises(ValueError):
-                wcfg.dumps({ key: True })
+                hipack.dumps({ key: True })
 
     def test_dump_non_dict(self):
         invalid_values = (
@@ -309,7 +309,7 @@ class TestDump(unittest2.TestCase):
         )
         for value in invalid_values:
             with self.assertRaises(TypeError):
-                wcfg.dumps(value)
+                hipack.dumps(value)
 
     def test_invalid_values(self):
         invalid_values = (
@@ -318,7 +318,7 @@ class TestDump(unittest2.TestCase):
         )
         for value in invalid_values:
             with self.assertRaises(TypeError):
-                wcfg.dumps({ "value": value })
+                hipack.dumps({ "value": value })
 
 
 class TestAPI(unittest2.TestCase):
@@ -398,21 +398,21 @@ class TestAPI(unittest2.TestCase):
     def test_dumps(self):
         for value, expected_noindent, expected \
                 in self.get_dumps_test_values():
-            result = wcfg.dumps(value)
+            result = hipack.dumps(value)
             expected = six.b(dedent(expected))
             self.assertEquals(expected, result)
             self.assertTrue(isinstance(result, bytes))
             expected_noindent = six.b(dedent(expected_noindent))
-            result = wcfg.dumps(value, False)
+            result = hipack.dumps(value, False)
             self.assertEquals(expected_noindent, result)
             self.assertTrue(isinstance(result, bytes))
 
     def test_loads(self):
         for expected, value in self.get_loads_test_values():
-            result = wcfg.loads(six.b(dedent(value)))
+            result = hipack.loads(six.b(dedent(value)))
             self.assertTrue(isinstance(result, dict))
             self.assertDictEqual(expected, result)
             # Passing Unicode text should work as well.
-            result = wcfg.loads(dedent(value))
+            result = hipack.loads(dedent(value))
             self.assertTrue(isinstance(result, dict))
             self.assertDictEqual(expected, result)
