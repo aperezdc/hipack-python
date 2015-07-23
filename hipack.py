@@ -122,11 +122,18 @@ def dump(value, stream, indent=True):
     # HiPack is always UTF-8 and the dumper writes bytes directly to the
     # stream, so it is actually better to pick the underlying stream and
     # forget about the io.TextIOWrapper altogether.
+    flush_after = False
     if six.PY3:
         from io import TextIOWrapper
         if isinstance(stream, TextIOWrapper):
+            stream.flush()  # Make sure there are no buffered leftovers
             stream = stream.buffer
+            flush_after = True
+
     _dump_dict(value, stream, 0 if indent else -1)
+
+    if flush_after:
+        stream.flush()
 
 
 def dumps(value, indent=True):
