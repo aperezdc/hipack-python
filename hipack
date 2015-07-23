@@ -44,15 +44,19 @@ formats = {
         (load_json, save_json),
     "yaml":
         (load_yaml, save_yaml),
+    "msgpack":
+        (load_msgpack, save_msgpack),
 }
 
 
 import optparse
-parser = optparse.OptionParser("[-f format] [-t format] input output")
+parser = optparse.OptionParser("[-f format] [-t format] < input > output")
 parser.add_option("-f", "--from", dest="from_format", default="json",
-        help="Read input in the specified FORMAT", metavar="FORMAT")
+        help="Read input in the specified FORMAT [default: %default]",
+        metavar="FORMAT")
 parser.add_option("-t", "--to", dest="to_format", default="hipack",
-        help="Write output in the specified FORMAT", metavar="FORMAT")
+        help="Write output in the specified FORMAT [default: %default]",
+        metavar="FORMAT")
 parser.add_option("--formats", default=False, action="store_true",
         help="Print list of supported formats and exit")
 
