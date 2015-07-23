@@ -116,6 +116,16 @@ def _dump_dict(value, stream, indent):
 def dump(value, stream, indent=True):
     if not isinstance(value, dict):
         raise TypeError("Dictionary value expected")
+
+    # In Python3, we may be given an io.TextIOWrapper instance, which
+    # handles itself conversion to/from strings and other niceties, but
+    # HiPack is always UTF-8 and the dumper writes bytes directly to the
+    # stream, so it is actually better to pick the underlying stream and
+    # forget about the io.TextIOWrapper altogether.
+    if six.PY3:
+        from io import TextIOWrapper
+        if isinstance(stream, TextIOWrapper):
+            stream = stream.buffer
     _dump_dict(value, stream, 0 if indent else -1)
 
 
