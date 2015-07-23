@@ -6,6 +6,17 @@
 #
 # Distributed under terms of the MIT license.
 
+
+def import_format(formatname, modulename=None):
+    from importlib import import_module
+    if modulename is None:
+        modulename = formatname
+    try:
+        return import_module(modulename)
+    except ImportError:
+        raise SystemExit("Format '" + formatname + "' requires the '"
+                + modulename + "' module, which is not installed")
+
 def load_hipack(fd):
     import hipack
     return hipack.load(fd)
@@ -19,20 +30,16 @@ def save_hipack_compact(data, fd):
     hipack.dump(data, fd, indent=False)
 
 def load_json(fd):
-    import json
-    return json.load(fd)
+    return import_format("json").load(fd)
 
 def save_json(data, fd):
-    import json
-    json.dump(data, fd)
+    import_format("json").dump(data, fd)
 
 def load_yaml(fd):
-    import yaml
-    return yaml.safe_load(fd)
+    return import_format("yaml").safe_load(fd)
 
 def save_yaml(data, fd):
-    import yaml
-    yaml.safe_dump(data, fd)
+    import_format("yaml").safe_dump(data, fd)
 
 
 formats = {
