@@ -72,12 +72,17 @@ parser.add_option("-t", "--to", dest="to_format", default="hipack",
         metavar="FORMAT")
 parser.add_option("--formats", default=False, action="store_true",
         help="Print list of supported formats and exit")
+parser.add_option("--hipack-module-version", default=False,
+        action="store_true", dest="hipack_module_version",
+        help="Show the version of the hipack Python module")
 
 if __name__ == "__main__":
     import sys
     options, args = parser.parse_args()
     if options.formats:
         [print_(name) for name in sorted(formats.keys())]
+    elif options.hipack_module_version:
+        print_(hipack.__version__)
     else:
         try:
             load = formats[options.from_format][0]
