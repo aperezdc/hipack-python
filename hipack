@@ -41,6 +41,12 @@ def load_yaml(fd):
 def save_yaml(data, fd):
     import_format("yaml").safe_dump(data, fd)
 
+def load_msgpack(fd):
+    return import_format("msgpack").load(fd)
+
+def save_msgpack(data, fd):
+    import_format("msgpack").dump(data, fd)
+
 
 formats = {
     "hipack":
