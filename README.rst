@@ -24,8 +24,8 @@ Features:
 * Compatible with both Python 2.6 (or newer), and 3.2 (or newer).
 
 
-Example
-=======
+Usage
+=====
 
 Given the following input file:
 
@@ -113,5 +113,33 @@ from the previous snippet would be written in text form as follows:
     groups: ["root"]
     uid: 0
   }
+
+
+Installation
+============
+
+The stable releases are uploaded to `PyPI <https://pypi.python.org>`_, so you
+can install them and upgrade using ``pip``::
+
+    pip install hipack
+
+Alternatively, you can install development versions —at your own risk—
+directly from the Git repository::
+
+    pip install -e git://github.com/aperezdc/hipack-python
+
+
+Development
+===========
+
+If you want to contribute, please use the usual GitHub workflow:
+
+1. Clone the repository.
+2. Hack on your clone.
+3. Send a pull request for review.
+
+If you do not have programming skills, you can still contribute by `reporting
+issues <https://github.com/aperezdc/hipack-python/issues>`_ that you may
+encounter.
 
 
