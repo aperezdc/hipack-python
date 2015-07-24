@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+		<title>HiPack Web Service Test</title>
+		<style type="text/css">
+		form {
+			width: 900px;
+			margin: 0 auto;
+		}
+		textarea {
+			margin: 0;
+			width: 440px;
+			height: 150px;
+		}
+		</style>
+		<script type="text/javascript">
+		function createRequest(method, url) {
+			var req = new XMLHttpRequest();
+			if ("withCredentials" in req) {
+				req.open(method, url, true);
+			} else if (typeof XDomainRequest != "undefined") {
+				req = new XDomainRequest();
+				req.open(method, url);
+			} else {
+				req = null;
+			}
+			return req;
+		}
+
+		function convertHiPack() {
+			var compact = document.getElementById("compact").checked ?  "&compact=1" : "";
+			var format  = document.getElementById("format");
+			var input   = document.getElementById("input");
+
+			var req = createRequest("POST", "/" + format.value + "?t=" +
+					((new Date()).getTime()) + compact);
+			req.onload = function () {
+				if (req.readyState == 4) {
+					var output = document.getElementById("output");
+					if (req.status == 200) {
+						output.value = req.responseText;
+					} else {
+						output.value = "(error)";
+					}
+				}
+			};
+			req.send(input.value);
+			return false;
+		}
+		</script>
+    </head>
+    <body>
+		<form method="post" action="#" onsubmit="return convertHiPack()">
+			<label for="format">Input format:</label>
+			<select id="format">
+				<option value="json" selected>JSON</option>
+				<option value="yaml">YAML</option>
+				<option value="hipack">HiPack</option>
+			</select>
+			<input type="checkbox" id="compact">
+			<label for="compact">Compact</label>
+			<br>
+			<textarea id="output" style="float:right"></textarea>
+			<textarea id="input">{ "input": "json", "compact": false }</textarea>
+			<br>
+			<input type="submit" value="Convert"></input>
+		</form>
+	</body>
+</html>

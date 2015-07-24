@@ -1,0 +1,112 @@
+#! /usr/bin/env python
+# -*- coding: utf-8 -*-
+# vim:fenc=utf-8
+#
+# Copyright © 2015 Adrian Perez <aperez@igalia.com>
+#
+# Distributed under terms of the MIT license.
+
+import sys
+import bottle
+import hipack, yaml, json
+from os import path
+from six import print_
+
+dir_path   = path.dirname(__file__)
+stats_path = path.join(dir_path, "stats.hi")
+
+
+loaders = {
+    "hipack": hipack.load,
+    "yaml"  : yaml.safe_load,
+    "json"  : json.load,
+}
+
+
+stats = {
+    "requests": 0,
+    "requests_failed": 0,
+    "requests_with_nulls": 0,
+    "cors_wrong_origin": 0,
+}
+
+
+def load_stats():
+    try:
+        with open(stats_path, "rb") as fd:
+            stats = hipack.load(fd)
+    except Exception as e:
+        print_("Could not load stats:", e, file=sys.stderr)
+
+def save_stats():
+    try:
+        with open(stats_path, "wb") as fd:
+            hipack.dump(stats, fd)
+    except Exception as e:
+        print_("Could not save stats:", e, file=sys.stderr)
+
+
+@bottle.route("/")
+def index_html():
+    return bottle.static_file("hipack-webservice.html", root=dir_path)
+
+
+allowed_origins = (
+    "http://hipack.org",
+    "http://hipack.org/",
+    "http://www.hipack.org",
+    "http://www.hipack.org/",
+)
+
+
+@bottle.route("/<format>", method="POST")
+def hipack_from(format):
+    global stats
+    stats["requests"] += 1
+
+    # Handle CORS.
+    origin = bottle.request.get_header("Origin", None)
+    if origin is not None:
+        if origin not in allowed_origins:
+            stats["cors_wrong_origin"] += 1
+            bottle.response.set_header("Access-Control-Allow-Origin", "null")
+            bottle.abort(401, "Invalid CORS origin.")
+        else:
+            bottle.response.set_header("Access-Control-Allow-Origin", origin)
+
+    try:
+        compact = bool(bottle.request.query.compact or False)
+    except ValueError:
+        compact = False
+
+    bottle.response.set_header("Content-Type", "text/plain")
+    try:
+        data = loaders[format](bottle.request.body)
+    except Exception as e:
+        bottle.response.status = 500
+        stats["requests_failed"] += 1
+        return e.message
+
+    try:
+        return hipack.dumps(data, not compact)
+    except TypeError as e:
+        if e.message == "Values of type <type 'NoneType'> cannot be dumped":
+            stats["requests_with_nulls"] += 1
+        stats["requests_failed"] += 1
+        raise
+    except Exception:
+        stats["requests_failed"] += 1
+        raise
+
+
+@bottle.route("/stats")
+def get_stats():
+    bottle.response.set_header("Content-Type", "text/plain")
+    return hipack.dumps(stats)
+
+
+if __name__ == "__main__":
+    import atexit
+    atexit.register(save_stats)
+    load_stats()
+    bottle.run(host="localhost", port=10080)
