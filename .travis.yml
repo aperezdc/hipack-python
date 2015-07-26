@@ -10,5 +10,5 @@ install:
   - pip install coverage coveralls
   - pip install -r requirements.txt
 script:
-  - coverage run --source=hipack.py setup.py test
+  - coverage run --include=hipack.py setup.py test
 after_success: coveralls
