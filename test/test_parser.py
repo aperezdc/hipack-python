@@ -56,6 +56,7 @@ class TestParser(unittest2.TestCase):
         numbers = (
             (u"0x1", 1),
             (u"0X1", 1),
+            (u"-0x3", -0x3),
             (u"0xcafe", 0xCAFE),
             (u"0XCAFE", 0xCAFE),
             (u"0xCAFE", 0xCAFE),
@@ -71,6 +72,7 @@ class TestParser(unittest2.TestCase):
             (u"01", 0o1),
             (u"01234567", 0o1234567),
             (u"042", 0o42),
+            (u"-032", -0o32),
         )
         self.check_numbers(numbers, six.integer_types)
 
@@ -78,6 +80,7 @@ class TestParser(unittest2.TestCase):
         numbers = (
             (u"1.", 1.0),
             (u".5", 0.5),
+            (u"0.1", 0.1),
             (u"1.5", 1.5),
             (u"1e3", 1e3),
             (u"1e-3", 1e-3),
@@ -96,8 +99,8 @@ class TestParser(unittest2.TestCase):
 
         self.check_numbers(gen_signs(), float)
 
-    def test_parse_valid_identifiers(self):
-        identifiers = (
+    def test_parse_valid_keys(self):
+        keys = (
             # Typical definition of identifiers.
             u"foo",
             u"ident-with-dashes",
@@ -117,10 +120,10 @@ class TestParser(unittest2.TestCase):
             u"Trømso",
             u"Güedángaños",
         )
-        for item in identifiers:
-            ident = self.parser(item).parse_identifier()
-            self.assertEquals(item, ident)
-            self.assertTrue(isinstance(ident, six.text_type))
+        for item in keys:
+            key = self.parser(item).parse_key()
+            self.assertEquals(item, key)
+            self.assertTrue(isinstance(key, six.text_type))
 
     def check_strings(self, strings, type_):
         for item in strings:
@@ -141,7 +144,6 @@ class TestParser(unittest2.TestCase):
             u"unicode: this → that, Trømso, Java™, ☺",
             (u"escaped backslash: \\\\", u"escaped backslash: \\"),
             (u"escaped double quote: \\\"", u"escaped double quote: \""),
-            (u"escaped UTF-8: \\☺", u"escaped UTF-8: ☺"),
         )
         self.check_strings(strings, six.text_type)
 
@@ -220,7 +222,7 @@ class TestParser(unittest2.TestCase):
             u"+e", u"-e", u"-.e", u"+.e", u"e+", u"e-", u".-e", u".+e",
             u"--", u"++", u"+1e3.", u"..1", u"1.2.", u"1..2", u"\"foo\"",
             u"True", u"False", u"{}", u"[]", u"()", u"0xx00", "0.1AeA3",
-            "-0x3", "-032", u"ee", u"1ee", u"1e1e1", u"0.1x2", u"1x.0",
+            u"ee", u"1ee", u"1e1e1", u"0.1x2", u"1x.0",
         )
         for item in invalid_numbers:
             with self.assertRaises(hipack.ParseError):

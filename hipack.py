@@ -15,37 +15,55 @@ __version__ = 8
 import six
 import string
 
-_SPACE = six.b(" ")
-_COMMA = six.b(",")
-_COLON = six.b(":")
-_LBRACE = six.b("{")
-_RBRACE = six.b("}")
-_NEWLINE = six.b("\n")
-_LBRACKET = six.b("[")
-_RBRACKET = six.b("]")
-_DQUOTE = six.b("\"")
-_OCTOTHORPE = six.b("#")
-_SLASHDQUOTE = six.b("\\\"")
-_BACKSLASH = six.b("\\")
+_SPACE        = six.b(" ")
+_COMMA        = six.b(",")
+_COLON        = six.b(":")
+_LBRACE       = six.b("{")
+_RBRACE       = six.b("}")
+_TAB          = six.b("\t")
+_RETURN       = six.b("\r")
+_NEWLINE      = six.b("\n")
+_LBRACKET     = six.b("[")
+_RBRACKET     = six.b("]")
+_DQUOTE       = six.b("\"")
+_OCTOTHORPE   = six.b("#")
+_SLASHDQUOTE  = six.b("\\\"")
+_BACKSLASH    = six.b("\\")
 _NUMBER_SIGNS = six.b("+-")
-_ZERO = six.b("0")
-_HEX_X = six.b("xX")
-_NUMBER_EXP = six.b("eE")
-_DOT = six.b(".")
-_EOF = six.b("")
+_ZERO         = six.b("0")
+_HEX_X        = six.b("xX")
+_NUMBER_EXP   = six.b("eE")
+_DOT          = six.b(".")
+_EOF          = six.b("")
 _BOOL_LEADERS = six.b("tTfF")
-_TRUE_T = six.b("tT")
-_TRUE_RUE = (six.b("r"), six.b("u"), six.b("e"))
-_FALSE_F = six.b("fF")
-_FALSE_ALSE = (six.b("a"), six.b("l"), six.b("s"), six.b("e"))
-_TRUE = six.b("True")
-_FALSE = six.b("False")
+_TRUE_T       = six.b("tT")
+_TRUE_RUE     = (six.b("r"), six.b("u"), six.b("e"))
+_FALSE_F      = six.b("fF")
+_FALSE_ALSE   = (six.b("a"), six.b("l"), six.b("s"), six.b("e"))
+_TRUE         = six.b("True")
+_FALSE        = six.b("False")
+_CHAR_n       = six.b("n")
+_CHAR_r       = six.b("r")
+_CHAR_t       = six.b("t")
 
 
 whitespaces = six.b(string.whitespace)
 _HEX_CHARS = six.b("abcdefABCDEF")
+_HEX_DIGITS = six.b("0123456789") + _HEX_CHARS
+_OCTAL_NONZERO_DIGITS = six.b("1234567")
 _NUMBER_CHARS = six.b(string.digits) + \
         _HEX_CHARS + _DOT + _NUMBER_EXP + _NUMBER_SIGNS + _HEX_X
+
+
+# Those are defined according to the spec.
+_WHITESPACE    = six.b("\t\n\r ")
+_NON_KEY_CHARS = _WHITESPACE + six.b("[]{}:,")
+
+def _is_hipack_key_character(ch):
+    return ch not in _NON_KEY_CHARS
+
+def _is_hipack_whitespace(ch):
+    return ch in _WHITESPACE
 
 
 def _dump_value(value, stream, indent):
@@ -157,7 +175,8 @@ class Parser(object):
         self.line = 1
         self.column = 0
         self.stream = stream
-        self.getchar()
+        self.nextchar()
+        self.skip_whitespace()
 
     def error(self, message):
         raise ParseError(self.line, self.column, message)
@@ -168,53 +187,46 @@ class Parser(object):
                 expected_message = "character '" + str(char) + "'"
             self.error("Unexpected input '" + str(self.look) + "', " +
                     str(expected_message) + " was expected")
-        self.getchar()
+        self.nextchar()
 
     def match(self, char, expected_message=None):
         self._basic_match(char, expected_message)
-        self.skip_whitespace()
-
-    def match_in(self, chars, expected_message=None):  # pragma: no cover
-        if self.look not in chars:
-            if expected_message is None:
-                expected_message = "one of '" + str(chars) + "'"
-            self.error("Unexpected input '" + str(self.look) + "', " +
-                    str(expected_message) + " was expected")
-        self.getchar()
-        self.skip_whitespace()
 
     def match_sequence(self, chars, expected_message=None):
         for char in chars:
             self._basic_match(char, expected_message)
-        self.skip_whitespace()
 
     def getchar(self):
-        self.look = self.stream.read(1)
-        if self.look == _EOF:
-            return
-        if self.look == _NEWLINE:
+        ch = self.stream.read(1)
+        if ch == _EOF:
+            return _EOF
+        elif ch == _NEWLINE:
             self.column = 0
             self.line += 1
         self.column += 1
-        # Skip over comments
+        return ch
+
+    def nextchar(self):
+        self.look = _OCTOTHORPE  # XXX Enter the loop at leas once.
         while self.look == _OCTOTHORPE:
-            while self.look != _NEWLINE and self.look != _EOF:
-                self.look = self.stream.read(1)
-            self.column = 1
-            self.line += 1
-        # self.getchar()
+            self.look = self.getchar()
+            if self.look == _OCTOTHORPE:
+                while self.look not in (_EOF, _NEWLINE):
+                    self.look = self.getchar()
 
     def skip_whitespace(self):
-        while self.look != _EOF and self.look in whitespaces:
-            self.getchar()
+        while self.look != _EOF and _is_hipack_whitespace(self.look):
+            self.nextchar()
 
-    def parse_identifier(self):
-        identifier = six.BytesIO()
-        while self.look != _COLON and self.look not in whitespaces:
-            identifier.write(self.look)
-            self.getchar()
-        self.skip_whitespace()
-        return identifier.getvalue().decode("utf-8")
+    def parse_key(self):
+        key = six.BytesIO()
+        while self.look != _EOF and _is_hipack_key_character(self.look):
+            key.write(self.look)
+            self.nextchar()
+        key = key.getvalue().decode("utf-8")
+        if len(key) == 0:
+            self.error("key expected")
+        return key
 
     def parse_bool(self):
         if self.look in _TRUE_T:
@@ -225,23 +237,35 @@ class Parser(object):
             ret = False
         else:
             self.error("True or False expected for boolean")
-        self.getchar()
+        self.nextchar()
         self.match_sequence(remaining, _TRUE if ret else _FALSE)
         return ret
 
     def parse_string(self):
+        self.match(_DQUOTE)
         value = six.BytesIO()
-        char = self.stream.read(1)
-        while char != _DQUOTE and char != _EOF:
-            if char == _BACKSLASH:
-                # A backslash picks the next character literally.
-                char = self.stream.read(1)
-            value.write(char)
-            char = self.stream.read(1)
-        if char != _DQUOTE:
-            self.error("Unterminated string")
-        self.getchar()
-        self.skip_whitespace()
+
+        while self.look != _EOF and self.look != _DQUOTE:
+            if self.look == _BACKSLASH:
+                self.look = self.getchar()
+                if self.look in (_DQUOTE, _BACKSLASH):
+                    pass
+                elif self.look == _CHAR_n:
+                    self.look = _NEWLINE
+                elif self.look == _CHAR_r:
+                    self.look = _RETURN
+                elif self.look == _CHAR_t:
+                    self.look = _TAB
+                else:
+                    extra = self.getchar()
+                    if extra not in _HEX_DIGITS or \
+                            self.look not in _HEX_DIGITS:
+                                self.error("invalid escape sequence")
+                    self.look = chr(16 * int(self.look, 16) + int(extra, 16))
+
+            value.write(self.look)
+            self.look = self.getchar()
+        self.match(_DQUOTE)
         return value.getvalue().decode("utf-8")
 
     def parse_number(self):
@@ -252,19 +276,19 @@ class Parser(object):
         if self.look in _NUMBER_SIGNS:
             has_sign = True
             number.write(self.look)
-            self.getchar()
+            self.nextchar()
 
         # Detect octal and hexadecimal numbers.
         is_hex = False
         is_octal = False
         if self.look == _ZERO:
             number.write(self.look)
-            self.getchar()
+            self.nextchar()
             if self.look in _HEX_X:
                 is_hex = True
                 number.write(self.look)
-                self.getchar()
-            else:
+                self.nextchar()
+            elif self.look in _OCTAL_NONZERO_DIGITS:
                 is_octal = True
 
         # Read the rest of the number.
@@ -277,10 +301,10 @@ class Parser(object):
                 exp_seen = True
                 # Handle the optional sign of the exponent.
                 number.write(self.look)
-                self.getchar()
+                self.nextchar()
                 if self.look in _NUMBER_SIGNS:
                     number.write(self.look)
-                    self.getchar()
+                    self.nextchar()
             else:
                 if self.look == _DOT:
                     if dot_seen:
@@ -288,20 +312,19 @@ class Parser(object):
                                 str(self.look) + "'")
                     dot_seen = True
                 number.write(self.look)
-                self.getchar()
-        self.skip_whitespace()
+                self.nextchar()
 
         # Return number converted to the most appropriate type.
         number = number.getvalue().decode("ascii")
         try:
             if is_hex:
                 assert not is_octal
-                if exp_seen or dot_seen or has_sign:
+                if exp_seen or dot_seen:
                     raise ValueError(str(number))
                 return int(number, 16)
             elif is_octal:
                 assert not is_hex
-                if dot_seen or exp_seen or has_sign:
+                if dot_seen or exp_seen:
                     raise ValueError(str(number))
                 return int(number, 8)
             elif dot_seen or exp_seen:
@@ -313,52 +336,96 @@ class Parser(object):
                 assert not is_octal
                 assert not exp_seen
                 assert not dot_seen
-                return int(number)
+                return int(number, 10)
         except ValueError:
             self.error("Malformed number: '" + str(number) + "'")
+
+    def parse_dict(self):
+        self.match(_LBRACE)
+        self.skip_whitespace()
+        result = self.parse_keyval_items(_RBRACE)
+        self.match(_RBRACE)
+        return result
+
+    def parse_list(self):
+        self.match(_LBRACKET)
+        self.skip_whitespace()
+
+        result = []
+        while self.look != _RBRACKET and self.look != _EOF:
+            result.append(self.parse_value())
+
+            got_whitespace = _is_hipack_whitespace(self.look)
+            self.skip_whitespace()
+            if self.look == _COMMA:
+                self.nextchar()
+            elif not got_whitespace and not _is_hipack_whitespace(self.look):
+                break
+            self.skip_whitespace()
+
+        self.match(_RBRACKET)
+        return result
 
     def parse_value(self):
         value = None
         if self.look == _DQUOTE:
             value = self.parse_string()
         elif self.look == _LBRACE:
-            self.match(_LBRACE)
-            value = self.parse_keyval_items()
-            self.match(_RBRACE)
+            value = self.parse_dict()
         elif self.look == _LBRACKET:
-            self.match(_LBRACKET)
-            value = self.parse_array_items()
-            self.match(_RBRACKET)
+            value = self.parse_list()
         elif self.look in _BOOL_LEADERS:
             value = self.parse_bool()
         else:
             value = self.parse_number()
         return value
 
-    def parse_array_items(self):
-        result = []
-        while self.look != _EOF and self.look != _RBRACKET:
-            result.append(self.parse_value())
-            self.skip_whitespace()
-            if self.look == _COMMA:
-                self.getchar()
+    def parse_keyval_items(self, eos):
+        result = {}
+        while self.look != eos and self.look != _EOF:
+            key = self.parse_key()
+
+            got_separator = False
+            if _is_hipack_whitespace(self.look):
+                got_separator = True
                 self.skip_whitespace()
+            if self.look == _COLON:
+                got_separator = True
+                self.nextchar()
+                self.skip_whitespace()
+            elif self.look in (_LBRACE, _LBRACKET):
+                got_separator = True
+
+            if not got_separator:
+                self.error("missing separator")
+
+            result[key] = self.parse_value()
+
+            # There must be either a comma or a whitespace character after the
+            # value, or the end-of-sequence character.
+            if self.look == _COMMA:
+                self.nextchar()
+            elif self.look != eos and not _is_hipack_whitespace(self.look):
+                print(self.look)
+                break
+            self.skip_whitespace()
+
         return result
 
-    def parse_keyval_items(self):
-        result = {}
-        self.skip_whitespace()
-        while self.look != _EOF and self.look != _RBRACE:
-            key = self.parse_identifier()
-            if self.look == _COLON:
-                self.match(_COLON)
+    def parse_message(self):
+        result = None
+        if self.look == _LBRACE:
+            self.nextchar()
             self.skip_whitespace()
-            result[key] = self.parse_value()
+            result = self.parse_keyval_items(_RBRACE)
+            self.match(_RBRACE)
+        else:
+            result = self.parse_keyval_items(_EOF)
         return result
 
 
 def load(stream):
-    return Parser(stream).parse_keyval_items()
+    return Parser(stream).parse_message()
 
 
 def loads(bytestring):
