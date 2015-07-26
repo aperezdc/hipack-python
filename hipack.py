@@ -432,3 +432,8 @@ def loads(bytestring):
     if isinstance(bytestring, six.text_type):
         bytestring = bytestring.encode("utf-8")
     return load(six.BytesIO(bytestring))
+
+
+if __name__ == "__main__":
+    import sys
+    dump(load(sys.stdin), sys.stdout)
