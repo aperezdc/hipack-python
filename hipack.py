@@ -366,8 +366,21 @@ class Parser(object):
         self.match(_RBRACKET)
         return result
 
+    def parse_annotations(self):
+        annotations = set()
+        while self.look == _COLON:
+            self.nextchar()
+            key = self.parse_key()
+            if key in annotations:
+                self.error("Duplicate annotation '" + str(key) + "'")
+            annotations.add(key)
+            self.skip_whitespace()
+        return annotations
+
     def parse_value(self):
         value = None
+        annotations = self.parse_annotations()
+        # TODO: Do something with the annotations
         if self.look == _DQUOTE:
             value = self.parse_string()
         elif self.look == _LBRACE:
