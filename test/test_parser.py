@@ -13,6 +13,28 @@ import six
 from textwrap import dedent
 
 
+def also_annotations(sequence):
+    for item in iter(sequence):
+        yield item
+        yield (u":ann1 " + item[0], item[1])
+        yield (u":ann1:ann2 " + item[0], item[1])
+        yield (u":ann1 :ann2 " + item[0], item[1])
+        yield (u":ann1:ann2:ann3 " + item[0], item[1])
+        yield (u":ann1 :ann2:ann3 " + item[0], item[1])
+        yield (u":ann1:ann2 :ann3 " + item[0], item[1])
+        yield (u":ann1 :ann2 :ann3 " + item[0], item[1])
+
+def make_tuples(sequence):
+    for item in iter(sequence):
+        if isinstance(item, tuple):
+            yield item
+        else:
+            yield (item, item)
+
+def wrap_strings(sequence):
+    return ((u"\"" + x + u"\"", y) for (x, y) in iter(sequence))
+
+
 class TestParser(unittest2.TestCase):
 
     @staticmethod
@@ -26,18 +48,18 @@ class TestParser(unittest2.TestCase):
             (u"False", False),
             (u"false", False),
         )
-        for item, expected in booleans:
-            value = self.parser(item).parse_bool()
+        for item, expected in also_annotations(booleans):
+            value = self.parser(item).parse_value()
             self.assertEqual(expected, value)
             self.assertTrue(isinstance(value, bool))
 
     def check_numbers(self, numbers, type_):
-        for item, result in numbers:
-            value = self.parser(item).parse_number()
+        for item, result in also_annotations(numbers):
+            value = self.parser(item).parse_value()
             self.assertEqual(result, value)
             self.assertTrue(isinstance(value, type_))
             # Trailing whitespace must not alter the result.
-            value = self.parser(item + " ").parse_number()
+            value = self.parser(item + " ").parse_value()
             self.assertEqual(result, value)
             self.assertTrue(isinstance(value, type_))
 
@@ -126,12 +148,8 @@ class TestParser(unittest2.TestCase):
             self.assertTrue(isinstance(key, six.text_type))
 
     def check_strings(self, strings, type_):
-        for item in strings:
-            if isinstance(item, tuple):
-                item, expected = item
-            else:
-                expected = item
-            value = self.parser(u"\"" + item + u"\"").parse_string()
+        for item, expected in also_annotations(wrap_strings(make_tuples(strings))):
+            value = self.parser(item).parse_value()
             self.assertEqual(expected, value)
             self.assertTrue(isinstance(value, type_))
 
@@ -160,7 +178,7 @@ class TestParser(unittest2.TestCase):
             (u"[1 2 ]", [1, 2]),
             (u"[ 1 2 ]", [1, 2]),
         )
-        for item, expected in arrays:
+        for item, expected in also_annotations(arrays):
             value = self.parser(item).parse_value()
             self.assertTrue(isinstance(value, list))
             self.assertListEqual(expected, value)
@@ -182,7 +200,7 @@ class TestParser(unittest2.TestCase):
             (u"[1, 2, ]", [1, 2]), # Spaces after dangling comma.
             (u"[1 2,3]", [1,2,3]), # Mixed spaces and commas.
         )
-        for item, expected in arrays:
+        for item, expected in also_annotations(arrays):
             value = self.parser(item).parse_value()
             self.assertTrue(isinstance(value, list))
             self.assertListEqual(expected, value)
@@ -198,7 +216,7 @@ class TestParser(unittest2.TestCase):
             u"[\"]",   # Unterminated string inside array.
             u"[\"]\"", # Unbalanced double-quote and brackets.
         )
-        for item in invalid_arrays:
+        for item, _ in also_annotations(make_tuples(invalid_arrays)):
             with self.assertRaises(hipack.ParseError):
                 self.parser(item).parse_value()
 
@@ -212,7 +230,7 @@ class TestParser(unittest2.TestCase):
             u"[,1]",    # Leading comma.
             u"[1,,]",   # Double trailing comma.
         )
-        for item in invalid_arrays:
+        for item, _ in also_annotations(make_tuples(invalid_arrays)):
             with self.assertRaises(hipack.ParseError):
                 self.parser(item).parse_value()
 
@@ -224,9 +242,11 @@ class TestParser(unittest2.TestCase):
             u"True", u"False", u"{}", u"[]", u"()", u"0xx00", "0.1AeA3",
             u"ee", u"1ee", u"1e1e1", u"0.1x2", u"1x.0",
         )
-        for item in invalid_numbers:
+        for item, _ in also_annotations(make_tuples(invalid_numbers)):
             with self.assertRaises(hipack.ParseError):
-                self.parser(item).parse_number()
+                parser = self.parser(item)
+                parser.parse_annotations()
+                parser.parse_number()
 
     def test_parse_invalid_booleans(self):
         invalid_booleans = (
@@ -234,9 +254,11 @@ class TestParser(unittest2.TestCase):
             u"Fa", u"FALSE", u"FaLSE", u"FaLsE", u"FalsE",
             u"1", u"0", u"\"True\"", u"\"False\"",
         )
-        for item in invalid_booleans:
+        for item, _ in also_annotations(make_tuples(invalid_booleans)):
             with self.assertRaises(hipack.ParseError):
-                self.parser(item).parse_bool()
+                parser = self.parser(item)
+                parser.parse_annotations()
+                parser.parse_bool()
 
     def test_parse_invalid_strings(self):
         invalid_strings = (
@@ -244,9 +266,22 @@ class TestParser(unittest2.TestCase):
             u"\"a",    # Ditto.
             u"\"\\\"", # Ditto.
         )
-        for item in invalid_strings:
+        for item, _ in also_annotations(make_tuples(invalid_strings)):
             with self.assertRaises(hipack.ParseError):
-                self.parser(item).parse_string()
+                parser = self.parser(item)
+                parser.parse_annotations()
+                parser.parse_string()
+
+    def test_parse_invalid_annotations(self):
+        invalid_annotations = (
+            u":", u"::", u": :", u":a :", ":a:", u":a::",
+            u":[", u":]", u":,", u":{", u":}", u".:foo",
+            u":::", u":a::", u":a:b:",
+            u":a :a",  # Duplicate annotation
+        )
+        for item in invalid_annotations:
+            with self.assertRaises(hipack.ParseError):
+                self.parser(item + u" 0").parse_value()
 
 
 class TestDump(unittest2.TestCase):
