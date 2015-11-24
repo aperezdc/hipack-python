@@ -28,17 +28,17 @@ class TestParser(unittest2.TestCase):
         )
         for item, expected in booleans:
             value = self.parser(item).parse_bool()
-            self.assertEquals(expected, value)
+            self.assertEqual(expected, value)
             self.assertTrue(isinstance(value, bool))
 
     def check_numbers(self, numbers, type_):
         for item, result in numbers:
             value = self.parser(item).parse_number()
-            self.assertEquals(result, value)
+            self.assertEqual(result, value)
             self.assertTrue(isinstance(value, type_))
             # Trailing whitespace must not alter the result.
             value = self.parser(item + " ").parse_number()
-            self.assertEquals(result, value)
+            self.assertEqual(result, value)
             self.assertTrue(isinstance(value, type_))
 
     def test_parse_valid_integer_numbers(self):
@@ -122,7 +122,7 @@ class TestParser(unittest2.TestCase):
         )
         for item in keys:
             key = self.parser(item).parse_key()
-            self.assertEquals(item, key)
+            self.assertEqual(item, key)
             self.assertTrue(isinstance(key, six.text_type))
 
     def check_strings(self, strings, type_):
@@ -132,7 +132,7 @@ class TestParser(unittest2.TestCase):
             else:
                 expected = item
             value = self.parser(u"\"" + item + u"\"").parse_string()
-            self.assertEquals(expected, value)
+            self.assertEqual(expected, value)
             self.assertTrue(isinstance(value, type_))
 
     def test_parse_valid_strings(self):
@@ -276,7 +276,7 @@ class TestDump(unittest2.TestCase):
         )
         for value, expected in values:
             result = self.dump_value(value)
-            self.assertEquals(expected, result)
+            self.assertEqual(expected, result)
             self.assertTrue(isinstance(result, bytes))
 
     def test_invalid_key_types(self):
@@ -402,11 +402,11 @@ class TestAPI(unittest2.TestCase):
                 in self.get_dumps_test_values():
             result = hipack.dumps(value)
             expected = six.b(dedent(expected))
-            self.assertEquals(expected, result)
+            self.assertEqual(expected, result)
             self.assertTrue(isinstance(result, bytes))
             expected_noindent = six.b(dedent(expected_noindent))
             result = hipack.dumps(value, False)
-            self.assertEquals(expected_noindent, result)
+            self.assertEqual(expected_noindent, result)
             self.assertTrue(isinstance(result, bytes))
 
     def test_loads(self):
