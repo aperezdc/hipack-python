@@ -7,22 +7,12 @@
 # Distributed under terms of the GPL3 license or, if that suits you
 # better the MIT/X11 license.
 
+from test.util import *
 import unittest2
 import hipack
 import six
 from textwrap import dedent
 
-
-def also_annotations(sequence):
-    for item in iter(sequence):
-        yield item
-        yield (u":ann1 " + item[0], item[1])
-        yield (u":ann1:ann2 " + item[0], item[1])
-        yield (u":ann1 :ann2 " + item[0], item[1])
-        yield (u":ann1:ann2:ann3 " + item[0], item[1])
-        yield (u":ann1 :ann2:ann3 " + item[0], item[1])
-        yield (u":ann1:ann2 :ann3 " + item[0], item[1])
-        yield (u":ann1 :ann2 :ann3 " + item[0], item[1])
 
 def make_tuples(sequence):
     for item in iter(sequence):
@@ -246,7 +236,7 @@ class TestParser(unittest2.TestCase):
             with self.assertRaises(hipack.ParseError):
                 parser = self.parser(item)
                 parser.parse_annotations()
-                parser.parse_number()
+                parser.parse_number(set())
 
     def test_parse_invalid_booleans(self):
         invalid_booleans = (
@@ -258,7 +248,7 @@ class TestParser(unittest2.TestCase):
             with self.assertRaises(hipack.ParseError):
                 parser = self.parser(item)
                 parser.parse_annotations()
-                parser.parse_bool()
+                parser.parse_bool(set())
 
     def test_parse_invalid_strings(self):
         invalid_strings = (
@@ -270,7 +260,7 @@ class TestParser(unittest2.TestCase):
             with self.assertRaises(hipack.ParseError):
                 parser = self.parser(item)
                 parser.parse_annotations()
-                parser.parse_string()
+                parser.parse_string(set())
 
     def test_parse_invalid_annotations(self):
         invalid_annotations = (

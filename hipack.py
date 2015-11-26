@@ -59,6 +59,15 @@ _NUMBER_CHARS = six.b(string.digits) + \
 _WHITESPACE    = six.b("\t\n\r ")
 _NON_KEY_CHARS = _WHITESPACE + six.b("[]{}:,")
 
+
+# Intrinsic type annotations
+ANNOT_INT    = six.u(".int")
+ANNOT_FLOAT  = six.u(".float")
+ANNOT_BOOL   = six.u(".bool")
+ANNOT_STRING = six.u(".string")
+ANNOT_LIST   = six.u(".list")
+ANNOT_DICT   = six.u(".dict")
+
 def _is_hipack_key_character(ch):
     return ch not in _NON_KEY_CHARS
 
@@ -169,8 +178,13 @@ class ParseError(ValueError):
         self.message = message
 
 
+def cast(annotations, bytestring, value):
+    return value
+
 class Parser(object):
-    def __init__(self, stream):
+    def __init__(self, stream, cast=cast):
+        assert callable(cast)
+        self.cast = cast
         self.look = None
         self.line = 1
         self.column = 0
@@ -228,7 +242,8 @@ class Parser(object):
             self.error("key expected")
         return key
 
-    def parse_bool(self):
+    def parse_bool(self, annotations):
+        s = self.look
         if self.look in _TRUE_T:
             remaining = _TRUE_RUE
             ret = True
@@ -239,11 +254,13 @@ class Parser(object):
             self.error("True or False expected for boolean")
         self.nextchar()
         self.match_sequence(remaining, _TRUE if ret else _FALSE)
-        return ret
+        annotations.add(ANNOT_BOOL)
+        return self.cast(frozenset(annotations), s.decode("utf-8"), ret)
 
-    def parse_string(self):
-        self.match(_DQUOTE)
+    def parse_string(self, annotations):
         value = six.BytesIO()
+        self.match(_DQUOTE)
+        value.write(_DQUOTE)
 
         while self.look != _EOF and self.look != _DQUOTE:
             if self.look == _BACKSLASH:
@@ -266,9 +283,13 @@ class Parser(object):
             value.write(self.look)
             self.look = self.getchar()
         self.match(_DQUOTE)
-        return value.getvalue().decode("utf-8")
+        value.write(_DQUOTE)
 
-    def parse_number(self):
+        annotations.add(ANNOT_STRING)
+        value = value.getvalue()
+        return self.cast(frozenset(annotations), value, value[1:-1].decode("utf-8"))
+
+    def parse_number(self, annotations):
         number = six.BytesIO()
 
         # Optional sign.
@@ -316,38 +337,46 @@ class Parser(object):
 
         # Return number converted to the most appropriate type.
         number = number.getvalue().decode("ascii")
+        value = None
         try:
             if is_hex:
                 assert not is_octal
                 if exp_seen or dot_seen:
                     raise ValueError(str(number))
-                return int(number, 16)
+                annotations.add(ANNOT_INT)
+                value = int(number, 16)
             elif is_octal:
                 assert not is_hex
                 if dot_seen or exp_seen:
                     raise ValueError(str(number))
-                return int(number, 8)
+                annotations.add(ANNOT_INT)
+                value = int(number, 8)
             elif dot_seen or exp_seen:
                 assert not is_hex
                 assert not is_octal
-                return float(number)
+                annotations.add(ANNOT_FLOAT)
+                value = float(number)
             else:
                 assert not is_hex
                 assert not is_octal
                 assert not exp_seen
                 assert not dot_seen
-                return int(number, 10)
+                annotations.add(ANNOT_INT)
+                value = int(number, 10)
         except ValueError:
             self.error("Malformed number: '" + str(number) + "'")
 
-    def parse_dict(self):
+        return self.cast(frozenset(annotations), number, value)
+
+    def parse_dict(self, annotations):
         self.match(_LBRACE)
         self.skip_whitespace()
         result = self.parse_keyval_items(_RBRACE)
         self.match(_RBRACE)
-        return result
+        annotations.add(ANNOT_DICT)
+        return self.cast(frozenset(annotations), None, result)
 
-    def parse_list(self):
+    def parse_list(self, annotations):
         self.match(_LBRACKET)
         self.skip_whitespace()
 
@@ -364,7 +393,8 @@ class Parser(object):
             self.skip_whitespace()
 
         self.match(_RBRACKET)
-        return result
+        annotations.add(ANNOT_LIST)
+        return self.cast(frozenset(annotations), None, result)
 
     def parse_annotations(self):
         annotations = set()
@@ -382,15 +412,15 @@ class Parser(object):
         annotations = self.parse_annotations()
         # TODO: Do something with the annotations
         if self.look == _DQUOTE:
-            value = self.parse_string()
+            value = self.parse_string(annotations)
         elif self.look == _LBRACE:
-            value = self.parse_dict()
+            value = self.parse_dict(annotations)
         elif self.look == _LBRACKET:
-            value = self.parse_list()
+            value = self.parse_list(annotations)
         elif self.look in _BOOL_LEADERS:
-            value = self.parse_bool()
+            value = self.parse_bool(annotations)
         else:
-            value = self.parse_number()
+            value = self.parse_number(annotations)
         return value
 
     def parse_keyval_items(self, eos):
@@ -437,14 +467,14 @@ class Parser(object):
         return result
 
 
-def load(stream):
-    return Parser(stream).parse_message()
+def load(stream, cast=cast):
+    return Parser(stream, cast).parse_message()
 
 
-def loads(bytestring):
+def loads(bytestring, cast=cast):
     if isinstance(bytestring, six.text_type):
         bytestring = bytestring.encode("utf-8")
-    return load(six.BytesIO(bytestring))
+    return load(six.BytesIO(bytestring), cast)
 
 
 if __name__ == "__main__":
