@@ -502,6 +502,6 @@ def loads(bytestring, cast=cast):
     return load(six.BytesIO(bytestring), cast)
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  ## pragma nocover
     import sys
     dump(load(sys.stdin), sys.stdout)
