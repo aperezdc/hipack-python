@@ -2,6 +2,10 @@
  hipack-python
 ===============
 
+.. image:: https://readthedocs.org/projects/hipack-python/badge/?version=latest
+   :target: https://hipack-python.readthedocs.org/en/latest
+   :alt: Documentation Status
+
 .. image:: https://img.shields.io/travis/aperezdc/hipack-python.svg?style=flat
    :target: https://travis-ci.org/aperezdc/hipack-python
    :alt: Build Status
