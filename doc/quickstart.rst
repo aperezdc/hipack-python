@@ -2,4 +2,4 @@
 Quickstart
 ==========
 
-.. todo:: Write this.
+**TODO**: Write this.

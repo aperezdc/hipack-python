@@ -51,8 +51,8 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'HiPack'
-copyright = '2015, Adrián Pérez de Castro'
-author = 'Adrián Pérez de Castro'
+copyright = '2015, Adrian Perez de Castro'
+author = 'Adrian Perez de Castro'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
