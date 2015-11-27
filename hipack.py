@@ -475,7 +475,6 @@ class Parser(object):
             if self.look == _COMMA:
                 self.nextchar()
             elif self.look != eos and not _is_hipack_whitespace(self.look):
-                print(self.look)
                 break
             self.skip_whitespace()
 
