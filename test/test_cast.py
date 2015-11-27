@@ -192,4 +192,8 @@ class TestValue(unittest2.TestCase):
         text = hipack.dumps({"item": h}, value=obj_value)
         self.assertEqual(six.u(expected), _U(text))
 
+    def test_serialize_duplicate_annotation(self):
+        with self.assertRaises(ValueError):
+            hipack.dumps({"x":0}, value=lambda x: (x, ("a", "a")))
+
 unpack_data(TestValue)
