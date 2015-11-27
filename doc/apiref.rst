@@ -5,5 +5,5 @@ API Reference
 :mod:`hipack`
 =============
 
-.. automodule:: lasso
+.. automodule:: hipack
    :members:

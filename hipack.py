@@ -7,7 +7,7 @@
 # Distributed under terms of the GPL3 license or, if that suits you
 # better the MIT/X11 license.
 
-"""This module provide a pythonic way to parse HiPack messages.
+"""This module provide a pythonic way to handle HiPack messages.
 """
 
 __version__ = 9
@@ -562,7 +562,7 @@ def load(stream, cast=cast):
     :param stream:
         A file-like object with a `.read(n)` method.
     :param callable cast:
-        A value conversion function, see :cls:`Parser` for details.
+        A value conversion function, see :class:`Parser` for details.
     """
     return Parser(stream, cast).parse_message()
 
@@ -575,7 +575,7 @@ def loads(bytestring, cast=cast):
         Input string. It is valid to pass any of `str`, `unicode`, and `bytes`
         objects as input.
     :param callable cast:
-        A value conversion function, see :cls:`Parser` for details.
+        A value conversion function, see :class:`Parser` for details.
     """
     if isinstance(bytestring, six.text_type):
         bytestring = bytestring.encode("utf-8")
