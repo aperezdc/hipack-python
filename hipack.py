@@ -75,73 +75,99 @@ def _is_hipack_whitespace(ch):
     return ch in _WHITESPACE
 
 
-def _dump_value(value, stream, indent):
-    if isinstance(value, float):
-        stream.write(str(value).encode("ascii"))
-    elif isinstance(value, bool):
-        stream.write(_TRUE if value else _FALSE)
-    elif isinstance(value, six.integer_types):
-        stream.write(str(value).encode("ascii"))
-    elif isinstance(value, six.text_type):
+def _dump_value(obj, stream, indent, value):
+    if isinstance(obj, float):
+        stream.write(str(obj).encode("ascii"))
+    elif isinstance(obj, bool):
+        stream.write(_TRUE if obj else _FALSE)
+    elif isinstance(obj, six.integer_types):
+        stream.write(str(obj).encode("ascii"))
+    elif isinstance(obj, six.text_type):
         stream.write(_DQUOTE)
-        stream.write(value.encode("utf-8").replace(_DQUOTE, _SLASHDQUOTE))
+        stream.write(obj.encode("utf-8").replace(_DQUOTE, _SLASHDQUOTE))
         stream.write(_DQUOTE)
-    elif isinstance(value, six.string_types) or isinstance(value, bytes):
+    elif isinstance(obj, six.string_types) or isinstance(obj, bytes):
         stream.write(_DQUOTE)
-        stream.write(value.replace(_DQUOTE, _SLASHDQUOTE))
+        stream.write(obj.replace(_DQUOTE, _SLASHDQUOTE))
         stream.write(_DQUOTE)
-    elif isinstance(value, (tuple, list)):
+    elif isinstance(obj, (tuple, list)):
         stream.write(_LBRACKET)
-        for item in value:
+        for item in obj:
             if indent >= 0:
                 stream.write(_NEWLINE)
                 stream.write(_SPACE * ((indent + 1) * 2))
-                _dump_value(item, stream, indent + 1)
+                _dump_value(item, stream, indent + 1, value)
             else:
-                _dump_value(item, stream, indent)
+                _dump_value(item, stream, indent, value)
                 stream.write(_COMMA)
         if indent >= 0:
             stream.write(_NEWLINE)
             stream.write(_SPACE * (indent * 2))
         stream.write(_RBRACKET)
-    elif isinstance(value, dict):
+    elif isinstance(obj, dict):
         stream.write(_LBRACE)
         if indent >= 0:
             stream.write(_NEWLINE)
-            _dump_dict(value, stream, indent + 1)
+            _dump_dict(obj, stream, indent + 1, value)
             stream.write(_SPACE * (indent * 2))
         else:
-            _dump_dict(value, stream, indent)
+            _dump_dict(obj, stream, indent, value)
         stream.write(_RBRACE)
     else:
-        raise TypeError("Values of type " + str(type(value)) +
+        raise TypeError("Values of type " + str(type(obj)) +
                         " cannot be dumped")
 
+def _check_key(k, thing="Key"):
+    if isinstance(k, six.text_type):
+        k = k.encode("utf-8")
+    elif not isinstance(k, six.string_types):
+        raise TypeError(thing + " is not a string: " + repr(k))
+    if _COLON in k:
+        raise ValueError(thing + " contains a colon: " + repr(k))
+    if _COMMA in k:
+        raise ValueError(thing + " contains a comma: " + repr(k))
+    if _SPACE in k or _NEWLINE in k or _RETURN in k or _TAB in k:
+        raise ValueError(thing + " contains whitespace: " + repr(k))
+    if _LBRACE in k or _RBRACE in k:
+        raise ValueError(thing + " contains a brace: " + repr(k))
+    if _LBRACKET in k or _RBRACKET in k:
+        raise ValueError(thing + " contains a bracket: " + repr(k))
+    return k
 
-def _dump_dict(value, stream, indent):
+
+def _dump_dict(obj, stream, indent, value):
     # Dictionaries are always dumped with their keys sorted,
-    # in order to produce a predictible output.
-    for k in sorted(six.iterkeys(value)):
-        v = value[k]
-        if isinstance(k, six.text_type):
-            k = k.encode("utf-8")
-        elif not isinstance(k, six.string_types):
-            raise TypeError("Key is not a string: " + repr(k))
-        if _COLON in k:
-            raise ValueError("Key contains a colon: " + repr(k))
-        if _SPACE in k:
-            raise ValueError("Key contains a space: " + repr(k))
+    # in order to produce a predictable output.
+    for k in sorted(six.iterkeys(obj)):
+        v, annotations = value(obj[k])
+        k = _check_key(k)
         stream.write(_SPACE * (indent * 2))
         stream.write(k)
         stream.write(_COLON)
-        if indent >= 0:
+        if annotations is not None and len(annotations) > 0:
+            seen = set()
+            for annot in iter(annotations):
+                annot = _check_key(annot, "Annotation")
+                if annot in seen:
+                    raise ValueError("Duplicated annotation: " + repr(annot))
+                seen.add(annot)
+                stream.write(_COLON)
+                stream.write(annot)
             stream.write(_SPACE)
-        _dump_value(v, stream, indent)
+        elif indent >= 0:
+            stream.write(_SPACE)
+        _dump_value(v, stream, indent, value)
         stream.write(_NEWLINE if indent >= 0 else _SPACE)
 
 
-def dump(value, stream, indent=True):
-    if not isinstance(value, dict):
+def value(obj):
+    return obj, None
+
+
+def dump(obj, stream, indent=True, value=value):
+    assert callable(value)
+    obj, annotations = value(obj)
+    if not isinstance(obj, dict):
         raise TypeError("Dictionary value expected")
 
     # In Python3, we may be given an io.TextIOWrapper instance, which
@@ -157,15 +183,15 @@ def dump(value, stream, indent=True):
             stream = stream.buffer
             flush_after = True
 
-    _dump_dict(value, stream, 0 if indent else -1)
+    _dump_dict(obj, stream, 0 if indent else -1, value)
 
     if flush_after:
         stream.flush()
 
 
-def dumps(value, indent=True):
+def dumps(obj, indent=True, value=value):
     output = six.BytesIO()
-    dump(value, output, indent)
+    dump(obj, output, indent, value)
     return output.getvalue()
 
 
@@ -410,7 +436,7 @@ class Parser(object):
     def parse_value(self):
         value = None
         annotations = self.parse_annotations()
-        # TODO: Do something with the annotations
+        # TODO: Unify annotation handling
         if self.look == _DQUOTE:
             value = self.parse_string(annotations)
         elif self.look == _LBRACE:

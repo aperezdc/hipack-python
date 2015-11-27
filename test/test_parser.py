@@ -279,7 +279,7 @@ class TestDump(unittest2.TestCase):
     @staticmethod
     def dump_value(value):
         stream = six.BytesIO()
-        hipack._dump_value(value, stream, 0)
+        hipack._dump_value(value, stream, 0, hipack.value)
         return stream.getvalue()
 
     def test_dump_values(self):

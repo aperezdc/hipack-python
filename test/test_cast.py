@@ -105,3 +105,91 @@ class TestCast(unittest2.TestCase):
         self.assertEqual(80, value[u"myserver"].port)
 
 unpack_data(TestCast)
+
+
+if six.PY3:
+    def _U(x):
+        return str(x, "utf-8")
+else:
+    def _U(x):
+        return unicode(x, "utf-8")
+
+class TestValue(unittest2.TestCase):
+
+    @data((
+        ((), "x: 0"),
+        (("a",), "x::a 0"),
+        (("a", "b"), "x::a:b 0"),
+        (("b", "a"), "x::b:a 0"),  # Order matters
+    ))
+    def test_dump_annot(self, data):
+        annotations, expected = data
+        text = hipack.dumps({"x": 0}, value=lambda x: (x, annotations))
+        self.assertEqual(six.u(expected + "\n"), _U(text))
+
+    @data((
+        "col:on", "com,ma",
+        "sp ace", "new\nline",
+        "carriage\rreturn", "\tab",
+        "lbr[acket", "rbr]acket",
+        "l{brace", "r}brace",
+    ))
+    def test_invalid_annots(self, annot):
+        with self.assertRaises(ValueError):
+            text = hipack.dumps({"x": 0}, value=lambda x: (x, (annot,)))
+
+    def test_serialize_object(self):
+        class Person(object):
+            def __init__(self, name, surname):
+                self.name = name
+                self.surname = surname
+            def as_dict(self):
+                return { "name": self.name, "surname": self.surname }
+
+        def obj_value(obj):
+            if isinstance(obj, Person):
+                return obj.as_dict(), ("person",)
+            return obj, None
+
+        text = hipack.dumps({"spiderman": Person("Peter", "Parker")},
+                value=obj_value)
+        self.assertEqual(six.u(dedent("""\
+                spiderman::person {
+                  name: "Peter"
+                  surname: "Parker"
+                }
+                """)), _U(text))
+
+    def test_serialize_object_nested(self):
+        class Person(object):
+            def __init__(self, name, surname):
+                self.name = name
+                self.surname = surname
+            def as_dict(self):
+                return { "name": self.name, "surname": self.surname }
+        class Hero(object):
+            def __init__(self, nick, alterego):
+                self.nick = nick
+                self.alterego = alterego
+            def as_dict(self):
+                return { "nick": self.nick, "alter-ego": self.alterego }
+
+        def obj_value(obj):
+            if isinstance(obj, (Person, Hero)):
+                return obj.as_dict(), (obj.__class__.__name__,)
+            return obj, None
+
+        h = Hero("Spider-Man", Person("Peter", "Parker"))
+        expected = dedent("""\
+            item::Hero {
+              alter-ego::Person {
+                name: "Peter"
+                surname: "Parker"
+              }
+              nick: "Spider-Man"
+            }
+            """)
+        text = hipack.dumps({"item": h}, value=obj_value)
+        self.assertEqual(six.u(expected), _U(text))
+
+unpack_data(TestValue)
