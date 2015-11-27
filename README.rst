@@ -21,7 +21,15 @@ serialization format. The API is intentionally similar to that of the standard
 
 Features:
 
-* Both reading, and writing HiPack is supported.
+* Both reading, and writing `HiPack version 1
+  <https://github.com/aperezdc/hipack/blob/v1/spec.rst>`__ is supported. The
+  following extensions are implemented as well:
+
+  - `HEP-1: Value Annotations
+    <https://github.com/aperezdc/hipack/blob/gh-pages/heps/hep-001.rst>`__.
+
+  (Note that extensions defined in HEPs are subject to change while they are
+  being discussed as proposals.)
 
 * Small, self-contained, pure Python implementation.
 

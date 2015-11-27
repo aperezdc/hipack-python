@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 ### Added
 - Documentation (using [Sphinx](http://sphinx-doc.org/). The generated documentation is available online [at Read The Docs](http://hipack-python.readthedocs.org/en/latest/).
+- Support for [HEP-1: Value Annotations](https://github.com/aperezdc/hipack/blob/gh-pages/heps/hep-001.rst)
 
 ## Fixed
 - Hex escape sequences in string literals no longer cause an error.
