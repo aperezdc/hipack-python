@@ -161,10 +161,30 @@ def _dump_dict(obj, stream, indent, value):
 
 
 def value(obj):
+    """
+    Default “value” function.
+    """
     return obj, None
 
 
 def dump(obj, stream, indent=True, value=value):
+    """
+    Writes Python objects to a writable stream as a HiPack message.
+
+    :param obj:
+        Object to be serialized and written.
+    :param stream:
+        A file-like object with a `.write(b)` method.
+    :param bool indent:
+        Whether to pretty-print and indent the written message, instead
+        of writing the whole message in single line. (Default: `False`).
+    :param callable value:
+        Function called before writing each value, which can perform
+        additional conversions to support direct serialization of values other
+        than those supported by HiPack. The function is passed a Python
+        object, and it must return an object that can be represented as a
+        HiPack value.
+    """
     assert callable(value)
     obj, annotations = value(obj)
     if not isinstance(obj, dict):
@@ -190,12 +210,33 @@ def dump(obj, stream, indent=True, value=value):
 
 
 def dumps(obj, indent=True, value=value):
+    """
+    Serializes a Python object into a string in HiPack format.
+
+    :param obj:
+        Object to be serialized and written.
+    :param bool indent:
+        Whether to pretty-print and indent the written message, instead
+        of writing the whole message in single line. (Default: `False`).
+    :param callable value:
+        A Python object conversion function, see :func:`dump()` for details.
+    """
     output = six.BytesIO()
     dump(obj, output, indent, value)
     return output.getvalue()
 
 
 class ParseError(ValueError):
+    """
+    Use to signal an error when parsing a HiPack message.
+
+    :attribute line:
+        Input line where the error occurred.
+    :attribute column:
+        Input column where the error occured.
+    :attribute message:
+        Textual description of the error.
+    """
     def __init__(self, line, column, message):
         super(ParseError, self).__init__(str(line) + ":" + str(column) +
                                          ": " + message)
@@ -205,9 +246,26 @@ class ParseError(ValueError):
 
 
 def cast(annotations, bytestring, value):
+    """
+    Default “cast” function.
+    """
     return value
 
 class Parser(object):
+    """
+    Parses HiPack messages and converts them to Python objects.
+
+    :param stream:
+        A file-like object with a `.read(n)` method.
+
+    :param callable cast:
+        Function called after each value has been parsed successfully, which
+        can perform additional conversions on the data. The `cast` function
+        is passed the set of annotations associated with the value, the
+        `bytes` representation before converting a simple literal value (that
+        is, all except lists and dictionaries, for which `None` is passed
+        instead), and the converted value.
+    """
     def __init__(self, stream, cast=cast):
         assert callable(cast)
         self.cast = cast
@@ -481,6 +539,11 @@ class Parser(object):
         return result
 
     def parse_message(self):
+        """
+        Parses a single message from the input stream. If the stream contains
+        multiple messages delimited by braces, each subsequent calls
+        will return the following message.
+        """
         result = None
         if self.look == _LBRACE:
             self.nextchar()
@@ -493,10 +556,27 @@ class Parser(object):
 
 
 def load(stream, cast=cast):
+    """
+    Parses a single message from an input stream.
+
+    :param stream:
+        A file-like object with a `.read(n)` method.
+    :param callable cast:
+        A value conversion function, see :cls:`Parser` for details.
+    """
     return Parser(stream, cast).parse_message()
 
 
 def loads(bytestring, cast=cast):
+    """
+    Parses a single message contained in a string.
+
+    :param bytestring:
+        Input string. It is valid to pass any of `str`, `unicode`, and `bytes`
+        objects as input.
+    :param callable cast:
+        A value conversion function, see :cls:`Parser` for details.
+    """
     if isinstance(bytestring, six.text_type):
         bytestring = bytestring.encode("utf-8")
     return load(six.BytesIO(bytestring), cast)
