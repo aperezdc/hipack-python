@@ -20,7 +20,7 @@ _non_id_chars_re = re.compile(r"[^a-zA-Z0-9_]")
 _collapse_underscore_re = re.compile(r"_+")
 def _make_id(s):
     if isinstance(s, six.string_types):
-        s = str(s.encode("ascii", errors="replace"))
+        s = str(s.encode("ascii", "replace"))
     else:
         s = str(s)
     s = _non_id_chars_re.subn("_", s)[0]
