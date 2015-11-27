@@ -304,7 +304,7 @@ class Parser(object):
                     if extra not in _HEX_DIGITS or \
                             self.look not in _HEX_DIGITS:
                                 self.error("invalid escape sequence")
-                    self.look = chr(16 * int(self.look, 16) + int(extra, 16))
+                    self.look = six.b(chr(16 * int(self.look, 16) + int(extra, 16)))
 
             value.write(self.look)
             self.look = self.getchar()

@@ -150,6 +150,10 @@ class TestParser(unittest2.TestCase):
             u" another with leading space",
             u"yet one more with trailing space ",
             u"unicode: this → that, Trømso, Java™, ☺",
+            (u"numeric: \\65\\5d\\5F", u"numeric: e]_"),
+            (u"new\\nline", u"new\nline"),
+            (u"horizontal\\tab", u"horizontal\tab"),
+            (u"carriage\\return", u"carriage\return"),
             (u"escaped backslash: \\\\", u"escaped backslash: \\"),
             (u"escaped double quote: \\\"", u"escaped double quote: \""),
         )
@@ -210,6 +214,38 @@ class TestParser(unittest2.TestCase):
             with self.assertRaises(hipack.ParseError):
                 self.parser(item).parse_value()
 
+    @data(also_annotations((
+        u"{ 0 }",
+        u"{ foo: }",
+        u"{ foo:foo }",
+        u"{foo:0]", u"{ foo: 0 ]",
+        u"{a{b{c}}}",
+        u"{a,}",
+        u"{a()}",
+    )))
+    def test_parse_invalid_dict(self, text):
+        with self.assertRaises(hipack.ParseError):
+            self.parser(text[0]).parse_value()
+
+    @data(also_annotations((
+        (u"{}", {}),
+        (u"{a:1}", {"a":1}),
+        (u"{a:1,b:2}", {"a":1, "b":2}),
+        (u"{a{b{c{}}}}", {"a":{"b":{"c":{}}}}),
+    )))
+    def test_parse_valid_dict(self, data):
+        text, expected = data
+        value = self.parser(text).parse_value()
+        self.assertEqual(expected, value)
+
+    @data((
+        u",", u"{", u"}", u"[", u"]", u"{]", u"[]", u"[}",
+        u"{ a: 1 ]", u"{ a { foo: 1, ], ]", u"{a:1,,}",
+    ))
+    def test_parse_invalid_message(self, text):
+        with self.assertRaises(hipack.ParseError):
+            self.parser(text).parse_message()
+
     def test_parse_invalid_arrays_with_commas(self):
         invalid_arrays = (
             u"[,]",     # Array with holes.
@@ -230,7 +266,8 @@ class TestParser(unittest2.TestCase):
             u"+e", u"-e", u"-.e", u"+.e", u"e+", u"e-", u".-e", u".+e",
             u"--", u"++", u"+1e3.", u"..1", u"1.2.", u"1..2", u"\"foo\"",
             u"True", u"False", u"{}", u"[]", u"()", u"0xx00", "0.1AeA3",
-            u"ee", u"1ee", u"1e1e1", u"0.1x2", u"1x.0",
+            u"ee", u"1ee", u"1e1e1", u"0.1x2", u"1x.0", u"01.0", u"01e1",
+            u"0x10.20",
         )
         for item, _ in also_annotations(make_tuples(invalid_numbers)):
             with self.assertRaises(hipack.ParseError):
@@ -252,9 +289,10 @@ class TestParser(unittest2.TestCase):
 
     def test_parse_invalid_strings(self):
         invalid_strings = (
-            u"\"",     # Unterminated.
-            u"\"a",    # Ditto.
-            u"\"\\\"", # Ditto.
+            u"\"",       # Unterminated.
+            u"\"a",      # Ditto.
+            u"\"\\\"",   # Ditto.
+            u"\"\\gg\"", # On-hex escape sequence.
         )
         for item, _ in also_annotations(make_tuples(invalid_strings)):
             with self.assertRaises(hipack.ParseError):
@@ -272,6 +310,14 @@ class TestParser(unittest2.TestCase):
         for item in invalid_annotations:
             with self.assertRaises(hipack.ParseError):
                 self.parser(item + u" 0").parse_value()
+
+    @unittest2.skipUnless(six.PY3, "relevant only for Python 3.x")
+    def test_python3_textwrap(self):
+        from io import TextIOWrapper
+        stream = six.BytesIO()
+        wrapper = TextIOWrapper(stream)
+        hipack.dump({"a": True}, wrapper)
+        self.assertEqual(six.b("a: True\n"), stream.getvalue())
 
 
 class TestDump(unittest2.TestCase):
@@ -346,6 +392,8 @@ class TestDump(unittest2.TestCase):
         for value in invalid_values:
             with self.assertRaises(TypeError):
                 hipack.dumps({ "value": value })
+
+unpack_data(TestParser)
 
 
 class TestAPI(unittest2.TestCase):
