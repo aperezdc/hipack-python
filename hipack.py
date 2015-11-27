@@ -10,7 +10,8 @@
 """This module provide a pythonic way to handle HiPack messages.
 """
 
-__version__ = 9
+__version__ = 10
+__heps__ = (1,)
 
 import six
 import string
