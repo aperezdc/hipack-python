@@ -517,7 +517,7 @@ class Parser(object):
             if _is_hipack_whitespace(self.look):
                 got_separator = True
                 self.skip_whitespace()
-            if self.look == _COLON:
+            elif self.look == _COLON:
                 got_separator = True
                 self.nextchar()
                 self.skip_whitespace()

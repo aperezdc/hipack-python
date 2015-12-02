@@ -246,6 +246,20 @@ class TestParser(unittest2.TestCase):
         with self.assertRaises(hipack.ParseError):
             self.parser(text).parse_message()
 
+    @data((
+        u"value :annot 0",
+        u"value :annot 1.1",
+        u"value :annot True",
+        u"value :annot []",
+        u"value :annot {}",
+    ))
+    def test_parse_valid_message_with_annots(self, text):
+        def check_annot(annotations, text, value):
+            self.assertIn(u"annot", annotations)
+            return value
+        value = hipack.loads(six.b(text), check_annot)
+        self.assertIsInstance(value, dict)
+
     def test_parse_invalid_arrays_with_commas(self):
         invalid_arrays = (
             u"[,]",     # Array with holes.
