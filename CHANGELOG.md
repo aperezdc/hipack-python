@@ -2,6 +2,8 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+
+## [v11] - 2015-12-02
 ### Fixed
 - Fixed parsing of annotations after a dictionary key when whitespace is used
   as key separator.
@@ -11,11 +13,12 @@ All notable changes to this project will be documented in this file.
 - Documentation (using [Sphinx](http://sphinx-doc.org/). The generated documentation is available online [at Read The Docs](http://hipack-python.readthedocs.org/en/latest/).
 - Support for [HEP-1: Value Annotations](https://github.com/aperezdc/hipack/blob/gh-pages/heps/hep-001.rst)
 
-## Fixed
+### Fixed
 - Hex escape sequences in string literals no longer cause an error.
 
 ## v9 - 2015-07-26
 - Added this changelog.
 
-[Unreleased]: https://github.com/aperezdc/hipack-python/compare/v10...HEAD
+[Unreleased]: https://github.com/aperezdc/hipack-python/compare/v11...HEAD
+[v11]: https://github.com/aperezdc/hipack-python/compare/v10...v11
 [v10]: https://github.com/aperezdc/hipack-python/compare/v9...v10
