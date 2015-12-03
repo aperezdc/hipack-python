@@ -2,6 +2,8 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+### Added
+- New `Parser.messages()` generator method, to easily iterate over multiple framed messages
 
 ## [v11] - 2015-12-02
 ### Fixed

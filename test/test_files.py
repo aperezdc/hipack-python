@@ -52,4 +52,11 @@ class TestConfigFiles(unittest2.TestCase):
                 self.assertEqual(self.heroes[i], hero)
                 i += 1
 
+    def test_framed_input_generator(self):
+        with open(path.join(path.dirname(__file__), "heroes.conf"), "rb") as f:
+            i = 0
+            for hero in hipack.Parser(f).messages():
+                self.assertEqual(self.heroes[i], hero)
+                i += 1
+
 TestConfigFiles.setup_tests()

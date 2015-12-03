@@ -91,6 +91,18 @@ and printing only their names (but not who is the person behind the mask):
     Superman
     Batman
 
+Alternatively, if the input stream is known to have a fixed size (e.g. it is
+a plain file and not a socket or a pipe in asynchronous mode), the generator
+:meth:`hipack.Parser.messages()` can be used instead:
+
+    >>> with open("heroes.hipack", "r") as stream:
+    ...     parser = hipack.Parser(stream)
+    ...     names = [hero[u"name"] for hero in parser.messages()]
+    ...
+    >>> names
+    [u'Spiderman', u'Superman', u'Batman']
+
+
 Writing
 -------
 

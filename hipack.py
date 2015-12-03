@@ -559,6 +559,21 @@ class Parser(object):
             result = self.parse_keyval_items(_EOF)
         return result
 
+    def messages(self):
+        """
+        Parses and yields each message contained in the input stream.
+
+        For an input stream which contains a single, unframed message, the
+        method yields exactly once. For an input with multiple, framed
+        messages, each message is yield in the same order as they are in
+        the input stream.
+        """
+        while True:
+            message = self.parse_message()
+            if message is None:
+                break
+            yield message
+
 
 def load(stream, cast=cast):
     """
