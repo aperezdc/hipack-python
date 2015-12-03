@@ -2,9 +2,16 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+
+## [v12] - 2015-12-03
 ### Added
 - API reference documentation now includes the `Parser` class.
 - New `Parser.messages()` generator method, to easily iterate over multiple framed messages
+
+### Fixed
+- Frames messages in an input stream are now handled correctly when
+  `Parser.parse_message()` is called repeatedly.
+- Fixed typos in the documentation. (Patch by Óscar García Amor, <ogarcia@connectical.com>.)
 
 ## [v11] - 2015-12-02
 ### Fixed
@@ -22,6 +29,7 @@ All notable changes to this project will be documented in this file.
 ## v9 - 2015-07-26
 - Added this changelog.
 
-[Unreleased]: https://github.com/aperezdc/hipack-python/compare/v11...HEAD
+[Unreleased]: https://github.com/aperezdc/hipack-python/compare/v12...HEAD
+[v12]: https://github.com/aperezdc/hipack-python/compare/v11...v12
 [v11]: https://github.com/aperezdc/hipack-python/compare/v10...v11
 [v10]: https://github.com/aperezdc/hipack-python/compare/v9...v10
