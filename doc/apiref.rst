@@ -7,3 +7,9 @@ API Reference
 
 .. automodule:: hipack
    :members:
+
+:class:`hipack.Parser`
+======================
+
+.. autoclass:: hipack.Parser
+   :members:
