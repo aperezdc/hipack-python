@@ -551,6 +551,7 @@ class Parser(object):
             self.skip_whitespace()
             result = self.parse_keyval_items(_RBRACE)
             self.match(_RBRACE)
+            self.skip_whitespace()
         else:
             result = self.parse_keyval_items(_EOF)
         return result

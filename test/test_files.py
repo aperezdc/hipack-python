@@ -30,5 +30,16 @@ class TestConfigFiles(unittest2.TestCase):
                 setattr(cls, sanitized_name,
                         lambda self: self.check_file(filepath))
 
+    heroes = (
+        { u"name": u"Spiderman", u"alter-ego": "Peter Parker" },
+        { u"name": u"Superman", u"alter-ego": "Clark Kent" },
+        { u"name": u"Batman", u"alter-ego": "Bruce Wayne" },
+    )
+    def test_framed_input(self):
+        with open(path.join(path.dirname(__file__), "heroes.conf"), "rb") as f:
+            parser = hipack.Parser(f)
+            for hero in self.heroes:
+                self.assertEqual(hero, parser.parse_message())
+
 
 TestConfigFiles.setup_tests()
