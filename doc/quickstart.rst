@@ -37,7 +37,7 @@ contains a Python dictionary, and their values properly converted:
 
     >>> isinstance(value, dict)
     True
-    >>> dict[u"title"], dict[u"is-documentation?"]
+    >>> value[u"title"], value[u"is-documentation?"]
     (u'Quickstart", True)
 
 
