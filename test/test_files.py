@@ -41,5 +41,15 @@ class TestConfigFiles(unittest2.TestCase):
             for hero in self.heroes:
                 self.assertEqual(hero, parser.parse_message())
 
+    def test_framed_input_stop_on_eof(self):
+        with open(path.join(path.dirname(__file__), "heroes.conf"), "rb") as f:
+            parser = hipack.Parser(f)
+            i = 0
+            while True:
+                hero = parser.parse_message()
+                if hero is None:
+                    break
+                self.assertEqual(self.heroes[i], hero)
+                i += 1
 
 TestConfigFiles.setup_tests()

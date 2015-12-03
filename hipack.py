@@ -276,6 +276,7 @@ class Parser(object):
         self.stream = stream
         self.nextchar()
         self.skip_whitespace()
+        self.framed = (self.look == _LBRACE)
 
     def error(self, message):
         raise ParseError(self.line, self.column, message)
@@ -546,12 +547,14 @@ class Parser(object):
         will return the following message.
         """
         result = None
-        if self.look == _LBRACE:
-            self.nextchar()
-            self.skip_whitespace()
-            result = self.parse_keyval_items(_RBRACE)
-            self.match(_RBRACE)
-            self.skip_whitespace()
+        if self.framed:
+            if self.look != _EOF:
+                self.match(_LBRACE)
+                self.nextchar()
+                self.skip_whitespace()
+                result = self.parse_keyval_items(_RBRACE)
+                self.match(_RBRACE)
+                self.skip_whitespace()
         else:
             result = self.parse_keyval_items(_EOF)
         return result
