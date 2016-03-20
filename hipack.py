@@ -91,7 +91,7 @@ def _dump_value(obj, stream, indent, value):
         stream.write(_DQUOTE)
         stream.write(obj.replace(_DQUOTE, _SLASHDQUOTE))
         stream.write(_DQUOTE)
-    elif isinstance(obj, (tuple, list)):
+    elif isinstance(obj, (tuple, list, set, frozenset)):
         stream.write(_LBRACKET)
         for item in obj:
             if indent >= 0:
