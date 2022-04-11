@@ -1,0 +1,29 @@
+---
+name: test
+
+on:
+  push:
+    branches:
+      - master
+  pull_request: {}
+
+jobs:
+  test:
+    runs-on: ubuntu-18.04
+    strategy:
+      matrix:
+        version:
+          - { py: '2.7',  tox: 'py27'  }
+          - { py: '3.4',  tox: 'py34'  }
+          - { py: '3.10', tox: 'py310' }
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Setup Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: ${{ matrix.version.py }}
+      - name: Install Tox
+        run: pip install tox
+      - name: Test
+        run: tox -e ${{ matrix.version.tox }} -- -v
