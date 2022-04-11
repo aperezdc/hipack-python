@@ -2,12 +2,11 @@
 # -*- coding: utf-8 -*-
 # vim:fenc=utf-8
 #
-# Copyright © 2015 Adrian Perez <aperez@igalia.com>
+# Copyright © 2015, 2022 Adrian Perez <aperez@igalia.com>
 #
 # Distributed under terms of the MIT license.
 
 from test.util import *
-import unittest2
 import hipack
 import six
 from textwrap import dedent
@@ -31,7 +30,7 @@ annot_values = (
 )
 
 
-class TestCast(unittest2.TestCase):
+class TestCast(unittest.TestCase):
 
     @staticmethod
     def parser(string, cast):
@@ -114,7 +113,7 @@ else:
     def _U(x):
         return unicode(x, "utf-8")
 
-class TestValue(unittest2.TestCase):
+class TestValue(unittest.TestCase):
 
     @data((
         ((), "x: 0"),

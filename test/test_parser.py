@@ -2,13 +2,12 @@
 # -*- coding: utf-8 -*-
 # vim:fenc=utf-8
 #
-# Copyright © 2014 Adrian Perez <aperez@igalia.com>
+# Copyright © 2014, 2022 Adrian Perez <aperez@igalia.com>
 #
 # Distributed under terms of the GPL3 license or, if that suits you
 # better the MIT/X11 license.
 
 from test.util import *
-import unittest2
 import hipack
 import six
 from textwrap import dedent
@@ -25,7 +24,7 @@ def wrap_strings(sequence):
     return ((u"\"" + x + u"\"", y) for (x, y) in iter(sequence))
 
 
-class TestParser(unittest2.TestCase):
+class TestParser(unittest.TestCase):
 
     @staticmethod
     def parser(string):
@@ -325,7 +324,7 @@ class TestParser(unittest2.TestCase):
             with self.assertRaises(hipack.ParseError):
                 self.parser(item + u" 0").parse_value()
 
-    @unittest2.skipUnless(six.PY3, "relevant only for Python 3.x")
+    @unittest.skipUnless(six.PY3, "relevant only for Python 3.x")
     def test_python3_textwrap(self):
         from io import TextIOWrapper
         stream = six.BytesIO()
@@ -334,7 +333,7 @@ class TestParser(unittest2.TestCase):
         self.assertEqual(six.b("a: True\n"), stream.getvalue())
 
 
-class TestDump(unittest2.TestCase):
+class TestDump(unittest.TestCase):
 
     @staticmethod
     def dump_value(value):
@@ -410,7 +409,7 @@ class TestDump(unittest2.TestCase):
 unpack_data(TestParser)
 
 
-class TestAPI(unittest2.TestCase):
+class TestAPI(unittest.TestCase):
 
     TEST_VALUES = (
         ({}, "", ""),

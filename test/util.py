@@ -2,12 +2,18 @@
 # -*- coding: utf-8 -*-
 # vim:fenc=utf-8
 #
-# Copyright © 2015 Adrian Perez <aperez@igalia.com>
+# Copyright © 2015, 2022 Adrian Perez <aperez@igalia.com>
 #
 # Distributed under terms of the MIT license.
 
 import six
 import re
+import sys
+
+if sys.version_info < (3, 5):
+    import unittest2 as unittest
+else:
+    import unittest
 
 
 def data(seq):

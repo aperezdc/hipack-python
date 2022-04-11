@@ -2,18 +2,18 @@
 # -*- coding: utf-8 -*-
 # vim:fenc=utf-8
 #
-# Copyright © 2014 Adrian Perez <aperez@igalia.com>
+# Copyright © 2014, 2022 Adrian Perez <aperez@igalia.com>
 #
 # Distributed under terms of the GPL3 license or, if that suits you
 # better the MIT/X11 license.
 
-import unittest2
 import hipack
 from os import path
 from os import listdir
+from test.util import unittest
 
 
-class TestConfigFiles(unittest2.TestCase):
+class TestConfigFiles(unittest.TestCase):
     def check_file(self, filepath):
         f = open(filepath, "rb")
         value = hipack.load(f)
