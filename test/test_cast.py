@@ -7,9 +7,10 @@
 # Distributed under terms of the MIT license.
 
 from test.util import *
+import unittest
 import hipack
-import six
 from textwrap import dedent
+from io import BytesIO
 
 
 basic_values = (
@@ -34,7 +35,7 @@ class TestCast(unittest.TestCase):
 
     @staticmethod
     def parser(string, cast):
-        return hipack.Parser(six.BytesIO(string.encode("utf-8")), cast)
+        return hipack.Parser(BytesIO(string.encode("utf-8")), cast)
 
     @data(also_annotations(basic_values))
     def test_intrinsic_annots(self, data):
@@ -106,13 +107,6 @@ class TestCast(unittest.TestCase):
 unpack_data(TestCast)
 
 
-if six.PY3:
-    def _U(x):
-        return str(x, "utf-8")
-else:
-    def _U(x):
-        return unicode(x, "utf-8")
-
 class TestValue(unittest.TestCase):
 
     @data((
@@ -124,7 +118,7 @@ class TestValue(unittest.TestCase):
     def test_dump_annot(self, data):
         annotations, expected = data
         text = hipack.dumps({"x": 0}, value=lambda x: (x, annotations))
-        self.assertEqual(six.u(expected + "\n"), _U(text))
+        self.assertEqual(expected + "\n", text.decode("utf-8"))
 
     @data((
         "col:on", "com,ma",
@@ -152,12 +146,12 @@ class TestValue(unittest.TestCase):
 
         text = hipack.dumps({"spiderman": Person("Peter", "Parker")},
                 value=obj_value)
-        self.assertEqual(six.u(dedent("""\
+        self.assertEqual(dedent(u"""\
                 spiderman::person {
                   name: "Peter"
                   surname: "Parker"
                 }
-                """)), _U(text))
+                """), text.decode("utf-8"))
 
     def test_serialize_object_nested(self):
         class Person(object):
@@ -179,7 +173,7 @@ class TestValue(unittest.TestCase):
             return obj, None
 
         h = Hero("Spider-Man", Person("Peter", "Parker"))
-        expected = dedent("""\
+        expected = dedent(u"""\
             item::Hero {
               alter-ego::Person {
                 name: "Peter"
@@ -189,7 +183,7 @@ class TestValue(unittest.TestCase):
             }
             """)
         text = hipack.dumps({"item": h}, value=obj_value)
-        self.assertEqual(six.u(expected), _U(text))
+        self.assertEqual(expected, text.decode("utf-8"))
 
     def test_serialize_duplicate_annotation(self):
         with self.assertRaises(ValueError):

@@ -7,10 +7,10 @@
 # Distributed under terms of the GPL3 license or, if that suits you
 # better the MIT/X11 license.
 
+import unittest
 import hipack
 from os import path
 from os import listdir
-from test.util import unittest
 
 
 class TestConfigFiles(unittest.TestCase):

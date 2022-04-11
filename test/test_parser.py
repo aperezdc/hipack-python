@@ -8,9 +8,10 @@
 # better the MIT/X11 license.
 
 from test.util import *
+import unittest
 import hipack
-import six
 from textwrap import dedent
+from io import BytesIO
 
 
 def make_tuples(sequence):
@@ -28,7 +29,7 @@ class TestParser(unittest.TestCase):
 
     @staticmethod
     def parser(string):
-        return hipack.Parser(six.BytesIO(string.encode("utf-8")))
+        return hipack.Parser(BytesIO(string.encode("utf-8")))
 
     def test_parse_valid_booleans(self):
         booleans = (
@@ -61,7 +62,7 @@ class TestParser(unittest.TestCase):
             (u"+123", 123),
             (u"-123", -123),
         )
-        self.check_numbers(numbers, six.integer_types)
+        self.check_numbers(numbers, int)
 
     def test_parse_valid_hex_numbers(self):
         numbers = (
@@ -76,7 +77,7 @@ class TestParser(unittest.TestCase):
             (u"0xC00FFEE", 0xC00FFEE),
             (u"0xdeadbeef", 0xdeadbeef),
         )
-        self.check_numbers(numbers, six.integer_types)
+        self.check_numbers(numbers, int)
 
     def test_parse_valid_octal_numbers(self):
         numbers = (
@@ -85,7 +86,7 @@ class TestParser(unittest.TestCase):
             (u"042", 0o42),
             (u"-032", -0o32),
         )
-        self.check_numbers(numbers, six.integer_types)
+        self.check_numbers(numbers, int)
 
     def test_parse_valid_float_numbers(self):
         numbers = (
@@ -134,7 +135,7 @@ class TestParser(unittest.TestCase):
         for item in keys:
             key = self.parser(item).parse_key()
             self.assertEqual(item, key)
-            self.assertTrue(isinstance(key, six.text_type))
+            self.assertTrue(isinstance(key, str))
 
     def check_strings(self, strings, type_):
         for item, expected in also_annotations(wrap_strings(make_tuples(strings))):
@@ -156,7 +157,7 @@ class TestParser(unittest.TestCase):
             (u"escaped backslash: \\\\", u"escaped backslash: \\"),
             (u"escaped double quote: \\\"", u"escaped double quote: \""),
         )
-        self.check_strings(strings, six.text_type)
+        self.check_strings(strings, str)
 
     def test_parse_valid_arrays(self):
         arrays = (
@@ -256,7 +257,7 @@ class TestParser(unittest.TestCase):
         def check_annot(annotations, text, value):
             self.assertIn(u"annot", annotations)
             return value
-        value = hipack.loads(six.b(text), check_annot)
+        value = hipack.loads(text.encode("utf-8"), check_annot)
         self.assertIsInstance(value, dict)
 
     def test_parse_invalid_arrays_with_commas(self):
@@ -324,20 +325,19 @@ class TestParser(unittest.TestCase):
             with self.assertRaises(hipack.ParseError):
                 self.parser(item + u" 0").parse_value()
 
-    @unittest.skipUnless(six.PY3, "relevant only for Python 3.x")
-    def test_python3_textwrap(self):
+    def test_textwrap(self):
         from io import TextIOWrapper
-        stream = six.BytesIO()
+        stream = BytesIO()
         wrapper = TextIOWrapper(stream)
         hipack.dump({"a": True}, wrapper)
-        self.assertEqual(six.b("a: True\n"), stream.getvalue())
+        self.assertEqual(b"a: True\n", stream.getvalue())
 
 
 class TestDump(unittest.TestCase):
 
     @staticmethod
     def dump_value(value):
-        stream = six.BytesIO()
+        stream = BytesIO()
         hipack._dump_value(value, stream, 0, hipack.value)
         return stream.getvalue()
 
@@ -351,7 +351,7 @@ class TestDump(unittest.TestCase):
             (0o5, b"5"),     # Ditto for octals in Python.
             (0.5, b"0.5"),
             (-0.5, b"-0.5"),
-            (six.b("byte string"), b'"byte string"'),
+            (b"byte string", b'"byte string"'),
             (u"a string", b'"a string"'),
             (u"double quote: \"", b'"double quote: \\""'),
             ((1, 2, 3), b"[\n  1\n  2\n  3\n]"),
@@ -487,17 +487,17 @@ class TestAPI(unittest.TestCase):
         for value, expected_noindent, expected \
                 in self.get_dumps_test_values():
             result = hipack.dumps(value)
-            expected = six.b(dedent(expected))
+            expected = dedent(expected).encode("utf-8")
             self.assertEqual(expected, result)
             self.assertTrue(isinstance(result, bytes))
-            expected_noindent = six.b(dedent(expected_noindent))
+            expected_noindent = dedent(expected_noindent).encode("utf-8")
             result = hipack.dumps(value, False)
             self.assertEqual(expected_noindent, result)
             self.assertTrue(isinstance(result, bytes))
 
     def test_loads(self):
         for expected, value in self.get_loads_test_values():
-            result = hipack.loads(six.b(dedent(value)))
+            result = hipack.loads(dedent(value).encode("utf-8"))
             self.assertTrue(isinstance(result, dict))
             self.assertDictEqual(expected, result)
             # Passing Unicode text should work as well.

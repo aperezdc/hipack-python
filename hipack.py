@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # vim:fenc=utf-8
 #
-# Copyright © 2014-2015 Adrian Perez <aperez@igalia.com>
+# Copyright © 2014-2015, 2022 Adrian Perez <aperez@igalia.com>
 #
 # Distributed under terms of the GPL3 license or, if that suits you
 # better the MIT/X11 license.
@@ -13,64 +13,66 @@
 __version__ = 13
 __heps__ = (1,)
 
-import six
 import string
+from io import BytesIO, TextIOWrapper
 
-_SPACE        = six.b(" ")
-_COMMA        = six.b(",")
-_COLON        = six.b(":")
-_LBRACE       = six.b("{")
-_RBRACE       = six.b("}")
-_TAB          = six.b("\t")
-_RETURN       = six.b("\r")
-_NEWLINE      = six.b("\n")
-_LBRACKET     = six.b("[")
-_RBRACKET     = six.b("]")
-_DQUOTE       = six.b("\"")
-_OCTOTHORPE   = six.b("#")
-_SLASHDQUOTE  = six.b("\\\"")
-_BACKSLASH    = six.b("\\")
-_NUMBER_SIGNS = six.b("+-")
-_ZERO         = six.b("0")
-_HEX_X        = six.b("xX")
-_NUMBER_EXP   = six.b("eE")
-_DOT          = six.b(".")
-_EOF          = six.b("")
-_BOOL_LEADERS = six.b("tTfF")
-_TRUE_T       = six.b("tT")
-_TRUE_RUE     = (six.b("r"), six.b("u"), six.b("e"))
-_FALSE_F      = six.b("fF")
-_FALSE_ALSE   = (six.b("a"), six.b("l"), six.b("s"), six.b("e"))
-_TRUE         = six.b("True")
-_FALSE        = six.b("False")
-_CHAR_n       = six.b("n")
-_CHAR_r       = six.b("r")
-_CHAR_t       = six.b("t")
+_SPACE = b" "
+_COMMA = b","
+_COLON = b":"
+_LBRACE = b"{"
+_RBRACE = b"}"
+_TAB = b"\t"
+_RETURN = b"\r"
+_NEWLINE = b"\n"
+_LBRACKET = b"["
+_RBRACKET = b"]"
+_DQUOTE = b"\""
+_OCTOTHORPE = b"#"
+_SLASHDQUOTE = b"\\\""
+_BACKSLASH = b"\\"
+_NUMBER_SIGNS = b"+-"
+_ZERO = b"0"
+_HEX_X = b"xX"
+_NUMBER_EXP = b"eE"
+_DOT = b"."
+_EOF = b""
+_BOOL_LEADERS = b"tTfF"
+_TRUE_T = b"tT"
+_TRUE_RUE = (b"r", b"u", b"e")
+_FALSE_F = b"fF"
+_FALSE_ALSE = (b"a", b"l", b"s", b"e")
+_TRUE = b"True"
+_FALSE = b"False"
+_CHAR_n = b"n"
+_CHAR_r = b"r"
+_CHAR_t = b"t"
 
 
-whitespaces = six.b(string.whitespace)
-_HEX_CHARS = six.b("abcdefABCDEF")
-_HEX_DIGITS = six.b("0123456789") + _HEX_CHARS
-_OCTAL_NONZERO_DIGITS = six.b("1234567")
-_NUMBER_CHARS = six.b(string.digits) + \
+whitespaces = string.whitespace.encode("ascii")
+_HEX_CHARS = b"abcdefABCDEF"
+_HEX_DIGITS = b"0123456789" + _HEX_CHARS
+_OCTAL_NONZERO_DIGITS = b"1234567"
+_NUMBER_CHARS = string.digits.encode("ascii") + \
         _HEX_CHARS + _DOT + _NUMBER_EXP + _NUMBER_SIGNS + _HEX_X
 
 
 # Those are defined according to the spec.
-_WHITESPACE    = six.b("\t\n\r ")
-_NON_KEY_CHARS = _WHITESPACE + six.b("[]{}:,")
+_WHITESPACE = b"\t\n\r "
+_NON_KEY_CHARS = _WHITESPACE + b"[]{}:,"
 
 
 # Intrinsic type annotations
-ANNOT_INT    = six.u(".int")
-ANNOT_FLOAT  = six.u(".float")
-ANNOT_BOOL   = six.u(".bool")
-ANNOT_STRING = six.u(".string")
-ANNOT_LIST   = six.u(".list")
-ANNOT_DICT   = six.u(".dict")
+ANNOT_INT = ".int"
+ANNOT_FLOAT = ".float"
+ANNOT_BOOL = ".bool"
+ANNOT_STRING = ".string"
+ANNOT_LIST = ".list"
+ANNOT_DICT = ".dict"
+
 
 def _is_hipack_key_character(ch):
     return ch not in _NON_KEY_CHARS
+
 
 def _is_hipack_whitespace(ch):
     return ch in _WHITESPACE
@@ -81,13 +83,13 @@ def _dump_value(obj, stream, indent, value):
         stream.write(str(obj).encode("ascii"))
     elif isinstance(obj, bool):
         stream.write(_TRUE if obj else _FALSE)
-    elif isinstance(obj, six.integer_types):
+    elif isinstance(obj, int):
         stream.write(str(obj).encode("ascii"))
-    elif isinstance(obj, six.text_type):
+    elif isinstance(obj, str):
         stream.write(_DQUOTE)
         stream.write(obj.encode("utf-8").replace(_DQUOTE, _SLASHDQUOTE))
         stream.write(_DQUOTE)
-    elif isinstance(obj, six.string_types) or isinstance(obj, bytes):
+    elif isinstance(obj, str) or isinstance(obj, bytes):
         stream.write(_DQUOTE)
         stream.write(obj.replace(_DQUOTE, _SLASHDQUOTE))
         stream.write(_DQUOTE)
@@ -118,10 +120,11 @@ def _dump_value(obj, stream, indent, value):
         raise TypeError("Values of type " + str(type(obj)) +
                         " cannot be dumped")
 
+
 def _check_key(k, thing="Key"):
-    if isinstance(k, six.text_type):
+    if isinstance(k, str):
         k = k.encode("utf-8")
-    elif not isinstance(k, six.string_types):
+    elif not isinstance(k, str):
         raise TypeError(thing + " is not a string: " + repr(k))
     if _COLON in k:
         raise ValueError(thing + " contains a colon: " + repr(k))
@@ -139,7 +142,7 @@ def _check_key(k, thing="Key"):
 def _dump_dict(obj, stream, indent, value):
     # Dictionaries are always dumped with their keys sorted,
     # in order to produce a predictable output.
-    for k in sorted(six.iterkeys(obj)):
+    for k in sorted(obj.keys()):
         v, annotations = value(obj[k])
         k = _check_key(k)
         stream.write(_SPACE * (indent * 2))
@@ -191,18 +194,11 @@ def dump(obj, stream, indent=True, value=value):
     if not isinstance(obj, dict):
         raise TypeError("Dictionary value expected")
 
-    # In Python3, we may be given an io.TextIOWrapper instance, which
-    # handles itself conversion to/from strings and other niceties, but
-    # HiPack is always UTF-8 and the dumper writes bytes directly to the
-    # stream, so it is actually better to pick the underlying stream and
-    # forget about the io.TextIOWrapper altogether.
     flush_after = False
-    if six.PY3:
-        from io import TextIOWrapper
-        if isinstance(stream, TextIOWrapper):
-            stream.flush()  # Make sure there are no buffered leftovers
-            stream = stream.buffer
-            flush_after = True
+    if isinstance(stream, TextIOWrapper):
+        stream.flush()  # Make sure there are no buffered leftovers
+        stream = stream.buffer
+        flush_after = True
 
     _dump_dict(obj, stream, 0 if indent else -1, value)
 
@@ -222,7 +218,7 @@ def dumps(obj, indent=True, value=value):
     :param callable value:
         A Python object conversion function, see :func:`dump()` for details.
     """
-    output = six.BytesIO()
+    output = BytesIO()
     dump(obj, output, indent, value)
     return output.getvalue()
 
@@ -238,6 +234,7 @@ class ParseError(ValueError):
     :attribute message:
         Textual description of the error.
     """
+
     def __init__(self, line, column, message):
         super(ParseError, self).__init__(str(line) + ":" + str(column) +
                                          ": " + message)
@@ -251,6 +248,7 @@ def cast(annotations, bytestring, value):
     Default “cast” function.
     """
     return value
+
 
 class Parser(object):
     """
@@ -267,6 +265,7 @@ class Parser(object):
         is, all except lists and dictionaries, for which `None` is passed
         instead), and the converted value.
     """
+
     def __init__(self, stream, cast=cast):
         assert callable(cast)
         self.cast = cast
@@ -286,7 +285,7 @@ class Parser(object):
             if expected_message is None:  # pragma: no cover
                 expected_message = "character '" + str(char) + "'"
             self.error("Unexpected input '" + str(self.look) + "', " +
-                    str(expected_message) + " was expected")
+                       str(expected_message) + " was expected")
         self.nextchar()
 
     def match(self, char, expected_message=None):
@@ -307,7 +306,7 @@ class Parser(object):
         return ch
 
     def nextchar(self):
-        self.look = _OCTOTHORPE  # XXX Enter the loop at leas once.
+        self.look = _OCTOTHORPE  # XXX Enter the loop at least once.
         while self.look == _OCTOTHORPE:
             self.look = self.getchar()
             if self.look == _OCTOTHORPE:
@@ -319,7 +318,7 @@ class Parser(object):
             self.nextchar()
 
     def parse_key(self):
-        key = six.BytesIO()
+        key = BytesIO()
         while self.look != _EOF and _is_hipack_key_character(self.look):
             key.write(self.look)
             self.nextchar()
@@ -344,7 +343,7 @@ class Parser(object):
         return self.cast(frozenset(annotations), s.decode("utf-8"), ret)
 
     def parse_string(self, annotations):
-        value = six.BytesIO()
+        value = BytesIO()
         self.match(_DQUOTE)
         value.write(_DQUOTE)
 
@@ -363,8 +362,8 @@ class Parser(object):
                     extra = self.getchar()
                     if extra not in _HEX_DIGITS or \
                             self.look not in _HEX_DIGITS:
-                                self.error("invalid escape sequence")
-                    self.look = six.b(chr(16 * int(self.look, 16) + int(extra, 16)))
+                        self.error("invalid escape sequence")
+                    self.look = (chr(16 * int(self.look, 16) + int(extra, 16))).encode("ascii")
 
             value.write(self.look)
             self.look = self.getchar()
@@ -376,12 +375,10 @@ class Parser(object):
         return self.cast(frozenset(annotations), value, value[1:-1].decode("utf-8"))
 
     def parse_number(self, annotations):
-        number = six.BytesIO()
+        number = BytesIO()
 
         # Optional sign.
-        has_sign = False
         if self.look in _NUMBER_SIGNS:
-            has_sign = True
             number.write(self.look)
             self.nextchar()
 
@@ -416,7 +413,7 @@ class Parser(object):
                 if self.look == _DOT:
                     if dot_seen:
                         self.error("Malformed number at '" +
-                                str(self.look) + "'")
+                                   str(self.look) + "'")
                     dot_seen = True
                 number.write(self.look)
                 self.nextchar()
@@ -597,9 +594,9 @@ def loads(bytestring, cast=cast):
     :param callable cast:
         A value conversion function, see :class:`Parser` for details.
     """
-    if isinstance(bytestring, six.text_type):
+    if isinstance(bytestring, str):
         bytestring = bytestring.encode("utf-8")
-    return load(six.BytesIO(bytestring), cast)
+    return load(BytesIO(bytestring), cast)
 
 
 if __name__ == "__main__":  ## pragma nocover

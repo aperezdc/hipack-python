@@ -2,11 +2,10 @@
 # -*- coding: utf-8 -*-
 # vim:fenc=utf-8
 #
-# Copyright © 2015 Adrian Perez <aperez@igalia.com>
+# Copyright © 2015, 2022 Adrian Perez <aperez@igalia.com>
 #
 # Distributed under terms of the MIT license.
 
-from six import print_
 import hipack
 
 
@@ -83,9 +82,9 @@ parser.add_argument('--hipack-module-version', default=False,
 if __name__ == "__main__":
     args = parser.parse_args()
     if args.formats:
-        [print_(name) for name in sorted(formats.keys())]
+        [print(name) for name in sorted(formats.keys())]
     elif args.hipack_module_version:
-        print_(hipack.__version__)
+        print(hipack.__version__)
     else:
         try:
             load = formats[args.from_format][0]
