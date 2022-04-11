@@ -6,14 +6,8 @@
 #
 # Distributed under terms of the MIT license.
 
-import six
 import re
 import sys
-
-if sys.version_info < (3, 5):
-    import unittest2 as unittest
-else:
-    import unittest
 
 
 def data(seq):
@@ -25,7 +19,7 @@ def data(seq):
 _non_id_chars_re = re.compile(r"[^a-zA-Z0-9_]")
 _collapse_underscore_re = re.compile(r"_+")
 def _make_id(s):
-    if isinstance(s, six.string_types):
+    if isinstance(s, str):
         s = str(s.encode("ascii", "replace"))
     else:
         s = str(s)
@@ -38,7 +32,7 @@ def _make_call_method(func, data_item):
 def unpack_data(cls):
     add_funcs = {}
     del_keys = set()
-    for name, value in six.iteritems(cls.__dict__):
+    for name, value in cls.__dict__.items():
         counter = 0
         if name.startswith("test_") and callable(value) \
                 and hasattr(value, "test_data_iter"):
@@ -47,7 +41,7 @@ def unpack_data(cls):
                 key = name + "_" + str(counter) + "_" + _make_id(data_item)
                 add_funcs[key] = _make_call_method(value, data_item)
                 counter += 1
-    [setattr(cls, name, f) for name, f in six.iteritems(add_funcs)]
+    [setattr(cls, name, f) for name, f in add_funcs.items()]
     [delattr(cls, name) for name in del_keys]
 
 

@@ -13,9 +13,8 @@ jobs:
     strategy:
       matrix:
         version:
-          - { py: '2.7',  tox: 'py27'  }
-          - { py: '3.4',  tox: 'py34'  }
-          - { py: '3.10', tox: 'py310' }
+          - { py: '3.5', tox: 'py35' }
+          - { py: '3.x', tox: 'py3' }
     steps:
       - name: Checkout
         uses: actions/checkout@v2
