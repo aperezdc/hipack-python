@@ -6,8 +6,8 @@
    :target: https://hipack-python.readthedocs.io/en/latest
    :alt: Documentation Status
 
-.. image:: https://img.shields.io/travis/aperezdc/hipack-python.svg?style=flat
-   :target: https://travis-ci.org/aperezdc/hipack-python
+.. image:: https://github.com/aperezdc/hipack-python/actions/workflows/test.yml/badge.svg
+   :target: https://github.com/aperezdc/hipack-python/actions/workflows/test.yml
    :alt: Build Status
 
 .. image:: https://img.shields.io/coveralls/aperezdc/hipack-python/master.svg?style=flat
