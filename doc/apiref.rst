@@ -6,7 +6,7 @@ API Reference
 =============
 
 .. automodule:: hipack
-   :members:
+   :members: cast, dump, dumps, load, loads, value, ParseError
 
 :class:`hipack.Parser`
 ======================
