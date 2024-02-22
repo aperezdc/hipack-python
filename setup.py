@@ -14,7 +14,7 @@ from os import path
 
 def distrib_file(*relpath):
     try:
-        return open(path.join(path.dirname(__file__), *relpath), "rU", \
+        return open(path.join(path.dirname(__file__), *relpath), "r", \
                 encoding="utf-8")
     except IOError:
         class DummyFile(object):
