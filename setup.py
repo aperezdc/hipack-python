@@ -59,4 +59,6 @@ setup(
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python",
         "Operating System :: OS Independent",
-    ])
+    ],
+    tests_require=["tox"],
+)
