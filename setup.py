@@ -10,7 +10,6 @@
 from setuptools import setup
 from codecs import open
 from os import path
-import sys
 
 
 def distrib_file(*relpath):
