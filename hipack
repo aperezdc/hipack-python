@@ -7,7 +7,8 @@
 # Distributed under terms of the MIT license.
 
 import hipack
-
+import argparse
+import sys
 
 def import_format(formatname, modulename=None):
     from importlib import import_module
@@ -61,7 +62,6 @@ formats = {
 }
 
 
-import argparse, sys
 parser = argparse.ArgumentParser()
 parser.add_argument('input', nargs='?', type=argparse.FileType('r'),
         help='Input file or - [default: stdin]', default=sys.stdin)
@@ -89,10 +89,10 @@ if __name__ == "__main__":
         try:
             load = formats[args.from_format][0]
         except KeyError:
-            raise SystemExit("No such format: " + options.from_format)
+            raise SystemExit("No such format: " + args.from_format)
         try:
             save = formats[args.to_format][1]
         except KeyError:
-            raise SystemExit("No such format: " + options.to_format)
+            raise SystemExit("No such format: " + args.to_format)
 
         save(load(args.input), args.output)
