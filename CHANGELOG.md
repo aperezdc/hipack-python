@@ -3,6 +3,16 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [v15] - 2024-04-30
+### Changed
+- The `hipack-webservice` example program no longer requires `six`.
+
+### Fixed
+- Fix usage of the `--to` and `--from` command line options with the
+  `hipack` tool.
+- The `hipack-webservice` example program will now correctly load stats
+  from disk during startup.
+
 ## [v14] - 2024-02-22
 ### Removed
 - Python 2.x is no longer supported.
@@ -44,6 +54,7 @@ All notable changes to this project will be documented in this file.
 - Added this changelog.
 
 [Unreleased]: https://github.com/aperezdc/hipack-python/compare/v14...HEAD
+[v15]: https://github.com/aperezdc/hipack-python/compare/v14...v15
 [v14]: https://github.com/aperezdc/hipack-python/compare/v13...v14
 [v13]: https://github.com/aperezdc/hipack-python/compare/v12...v13
 [v12]: https://github.com/aperezdc/hipack-python/compare/v11...v12
