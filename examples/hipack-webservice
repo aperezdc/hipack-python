@@ -6,11 +6,12 @@
 #
 # Distributed under terms of the MIT license.
 
-import sys
 import bottle
-import hipack, yaml, json
+import hipack
+import json
+import sys
+import yaml
 from os import path
-from six import print_
 
 dir_path   = path.dirname(__file__)
 stats_path = path.join(dir_path, "stats.hi")
@@ -36,14 +37,14 @@ def load_stats():
         with open(stats_path, "rb") as fd:
             stats = hipack.load(fd)
     except Exception as e:
-        print_("Could not load stats:", e, file=sys.stderr)
+        print("Could not load stats:", e, file=sys.stderr)
 
 def save_stats():
     try:
         with open(stats_path, "wb") as fd:
             hipack.dump(stats, fd)
     except Exception as e:
-        print_("Could not save stats:", e, file=sys.stderr)
+        print("Could not save stats:", e, file=sys.stderr)
 
 
 @bottle.route("/")
