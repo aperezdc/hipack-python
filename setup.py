@@ -18,7 +18,8 @@ def distrib_file(*relpath):
                 encoding="utf-8")
     except IOError:
         class DummyFile(object):
-            read = lambda self: ""
+            def read(self):
+                return ""
         return DummyFile()
 
 
