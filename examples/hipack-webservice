@@ -33,6 +33,7 @@ stats = {
 
 
 def load_stats():
+    global stats
     try:
         with open(stats_path, "rb") as fd:
             stats = hipack.load(fd)
