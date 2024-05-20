@@ -124,7 +124,7 @@ def _dump_value(obj, stream, indent, value):
 def _check_key(k, thing="Key"):
     if isinstance(k, str):
         k = k.encode("utf-8")
-    elif not isinstance(k, str):
+    else:
         raise TypeError(thing + " is not a string: " + repr(k))
     if _COLON in k:
         raise ValueError(thing + " contains a colon: " + repr(k))
